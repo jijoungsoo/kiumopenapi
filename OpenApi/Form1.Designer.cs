@@ -40,6 +40,8 @@
             this.lst실시간 = new System.Windows.Forms.ListBox();
             this.label4 = new System.Windows.Forms.Label();
             this.로그인버튼 = new System.Windows.Forms.Button();
+            this.로그아웃 = new System.Windows.Forms.Button();
+            this.접속상태 = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.axKHOpenAPI1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -150,11 +152,33 @@
             this.로그인버튼.UseVisualStyleBackColor = true;
             this.로그인버튼.Click += new System.EventHandler(this.로그인_Click);
             // 
+            // 로그아웃
+            // 
+            this.로그아웃.Location = new System.Drawing.Point(825, 56);
+            this.로그아웃.Name = "로그아웃";
+            this.로그아웃.Size = new System.Drawing.Size(75, 23);
+            this.로그아웃.TabIndex = 11;
+            this.로그아웃.Text = "로그아웃";
+            this.로그아웃.UseVisualStyleBackColor = true;
+            this.로그아웃.Click += new System.EventHandler(this.로그아웃_Click);
+            // 
+            // 접속상태
+            // 
+            this.접속상태.Location = new System.Drawing.Point(825, 85);
+            this.접속상태.Name = "접속상태";
+            this.접속상태.Size = new System.Drawing.Size(75, 23);
+            this.접속상태.TabIndex = 12;
+            this.접속상태.Text = "접속상태";
+            this.접속상태.UseVisualStyleBackColor = true;
+            this.접속상태.Click += new System.EventHandler(this.접속상태_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1178, 538);
+            this.Controls.Add(this.접속상태);
+            this.Controls.Add(this.로그아웃);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.lst실시간);
             this.Controls.Add(this.label3);
@@ -188,6 +212,8 @@
         private System.Windows.Forms.ListBox lst실시간;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Button 로그인버튼;
+        private System.Windows.Forms.Button 로그아웃;
+        private System.Windows.Forms.Button 접속상태;
     }
 }
 

@@ -13,6 +13,8 @@ namespace OpenApi
 {
     public partial class Form1 : Form
     {
+        private int _scrNum = 5000;
+
         public Form1()
         {
             InitializeComponent();
@@ -22,7 +24,11 @@ namespace OpenApi
         {
             if (axKHOpenAPI1.CommConnect() == 0)
             {
-                Console.WriteLine("로그인");
+                Logger(Log.일반, "로그인창 열기 성공");
+            }
+            else
+            {
+                Logger(Log.에러, "로그인창 열기 실패");
             }
         }
 
@@ -195,5 +201,45 @@ namespace OpenApi
 
         }
 
+        private void 로그아웃_Click(object sender, EventArgs e)
+        {
+            DisconnectAllRealData();
+            axKHOpenAPI1.CommTerminate();
+            Logger(Log.일반, "로그아웃");
+
+        }
+
+        // 실시간 연결 종료
+        private void DisconnectAllRealData()
+        {
+            for (int i = _scrNum; i > 5000; i--)
+            {
+                axKHOpenAPI1.DisconnectRealData(i.ToString());
+            }
+
+            _scrNum = 5000;
+        }
+
+
+        // 화면번호 생산
+        private string GetScrNum()
+        {
+            if (_scrNum < 9999)
+                _scrNum++;
+            else
+                _scrNum = 5000;
+
+            return _scrNum.ToString();
+        }
+
+        private void 접속상태_Click(object sender, EventArgs e)
+        {
+            if (axKHOpenAPI1.GetConnectState() == 0){
+                Logger(Log.일반, "Open API 연결 : 미연결");
+            }else{
+                Logger(Log.일반, "Open API 연결 : 연결중");
+            }
+
+        }
     }
 }
