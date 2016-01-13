@@ -7,22 +7,58 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.ServiceModel;
 using KiwoomCode;
+using WcfServiceLibrary;
 
 namespace OpenApi
 {
     public partial class Form1 : Form
     {
-        private int _scrNum = 5000;
-
+        private ServiceHost productsServiceHost;
+        private Class1 class1;
         public Form1()
         {
             InitializeComponent();
+            init();
+            class1 = Class1.getClass1Instance();
+            class1.setAxKHOpenAPIInstance(this.axKHOpenAPI);
         }
+
+        private void init()
+        {
+            Dictionary<String, String> comboSource = new Dictionary<String, String>();
+                   comboSource.Add("ACCOUNT_CNT", "전체계좌수");
+                   comboSource.Add("ACCNO", "전체계좌");
+                   comboSource.Add("USER_ID", "사용자ID");
+                   comboSource.Add("USER_NAME", "사용자명");
+                   comboSource.Add("KEY_BSECGB", "키보드보안 해지여부. 0:정상, 1:해지");
+                   comboSource.Add("FIREW_SECGB", "방화벽 설정 여부. 0:미설정, 1:설정, 2:해지");
+
+            cb_GetLoginInfo.DataSource = new BindingSource(comboSource, null);
+            cb_GetLoginInfo.DisplayMember = "Value";
+            cb_GetLoginInfo.ValueMember = "Key";
+                        
+            Dictionary<String, String> comboSource1 = new Dictionary<String, String>();
+            comboSource1.Add("0", "장내");
+            comboSource1.Add("3", "ELW");
+            comboSource1.Add("4", "뮤추얼펀드");
+            comboSource1.Add("5", "신주인수권");
+            comboSource1.Add("6", "리츠");
+            comboSource1.Add("8", "ETF");
+            comboSource1.Add("9", "하이일드펀드");
+            comboSource1.Add("10", "코스닥");
+            comboSource1.Add("30", "제3시장");
+
+            cb_GetCodeListByMarket.DataSource = new BindingSource(comboSource1, null);
+            cb_GetCodeListByMarket.DisplayMember = "Value";
+            cb_GetCodeListByMarket.ValueMember = "Key";
+        }
+        
 
         private void 로그인_Click(object sender, EventArgs e)
         {
-            if (axKHOpenAPI1.CommConnect() == 0)
+            if (axKHOpenAPI.CommConnect() == 0)
             {
                 Logger(Log.일반, "로그인창 열기 성공");
             }
@@ -39,7 +75,7 @@ namespace OpenApi
 
             if (e.sRQName == "주식주문")
             {
-                string s원주문번호 = axKHOpenAPI1.GetCommData(e.sTrCode, "", 0, "").Trim();
+                string s원주문번호 = axKHOpenAPI.GetCommData(e.sTrCode, "", 0, "").Trim();
 
                 long n원주문번호 = 0;
                 bool canConvert = long.TryParse(s원주문번호, out n원주문번호);
@@ -53,31 +89,31 @@ namespace OpenApi
             // OPT1001 : 주식기본정보
             else if (e.sRQName == "주식기본정보")
             {
-                int nCnt = axKHOpenAPI1.GetRepeatCnt(e.sTrCode, e.sRQName);
+                int nCnt = axKHOpenAPI.GetRepeatCnt(e.sTrCode, e.sRQName);
 
                 for (int i = 0; i < nCnt; i++)
                 {
                     Logger(Log.조회, "{0} | 현재가:{1:N0} | 등락율:{2} | 거래량:{3:N0} ",
-                        axKHOpenAPI1.CommGetData(e.sTrCode, "", e.sRQName, i, "종목명").Trim(),
-                        Int32.Parse(axKHOpenAPI1.CommGetData(e.sTrCode, "", e.sRQName, i, "현재가").Trim()),
-                        axKHOpenAPI1.CommGetData(e.sTrCode, "", e.sRQName, i, "등락율").Trim(),
-                        Int32.Parse(axKHOpenAPI1.CommGetData(e.sTrCode, "", e.sRQName, i, "거래량").Trim()));
+                        axKHOpenAPI.CommGetData(e.sTrCode, "", e.sRQName, i, "종목명").Trim(),
+                        Int32.Parse(axKHOpenAPI.CommGetData(e.sTrCode, "", e.sRQName, i, "현재가").Trim()),
+                        axKHOpenAPI.CommGetData(e.sTrCode, "", e.sRQName, i, "등락율").Trim(),
+                        Int32.Parse(axKHOpenAPI.CommGetData(e.sTrCode, "", e.sRQName, i, "거래량").Trim()));
                 }
             }
             // OPT10081 : 주식일봉차트조회
             else if (e.sRQName == "주식일봉차트조회")
             {
-                int nCnt = axKHOpenAPI1.GetRepeatCnt(e.sTrCode, e.sRQName);
+                int nCnt = axKHOpenAPI.GetRepeatCnt(e.sTrCode, e.sRQName);
 
                 for (int i = 0; i < nCnt; i++)
                 {
                     Logger(Log.조회, "{0} | 현재가:{1:N0} | 거래량:{2:N0} | 시가:{3:N0} | 고가:{4:N0} | 저가:{5:N0} ",
-                        axKHOpenAPI1.CommGetData(e.sTrCode, "", e.sRQName, i, "일자").Trim(),
-                        Int32.Parse(axKHOpenAPI1.CommGetData(e.sTrCode, "", e.sRQName, i, "현재가").Trim()),
-                        Int32.Parse(axKHOpenAPI1.CommGetData(e.sTrCode, "", e.sRQName, i, "거래량").Trim()),
-                        Int32.Parse(axKHOpenAPI1.CommGetData(e.sTrCode, "", e.sRQName, i, "시가").Trim()),
-                        Int32.Parse(axKHOpenAPI1.CommGetData(e.sTrCode, "", e.sRQName, i, "고가").Trim()),
-                        Int32.Parse(axKHOpenAPI1.CommGetData(e.sTrCode, "", e.sRQName, i, "저가").Trim()));
+                        axKHOpenAPI.CommGetData(e.sTrCode, "", e.sRQName, i, "일자").Trim(),
+                        Int32.Parse(axKHOpenAPI.CommGetData(e.sTrCode, "", e.sRQName, i, "현재가").Trim()),
+                        Int32.Parse(axKHOpenAPI.CommGetData(e.sTrCode, "", e.sRQName, i, "거래량").Trim()),
+                        Int32.Parse(axKHOpenAPI.CommGetData(e.sTrCode, "", e.sRQName, i, "시가").Trim()),
+                        Int32.Parse(axKHOpenAPI.CommGetData(e.sTrCode, "", e.sRQName, i, "고가").Trim()),
+                        Int32.Parse(axKHOpenAPI.CommGetData(e.sTrCode, "", e.sRQName, i, "저가").Trim()));
                 }
             }
 
@@ -100,12 +136,12 @@ namespace OpenApi
             if (e.sGubun == "0")
             {
                 Logger(Log.실시간, "구분 : 주문체결통보");
-                Logger(Log.실시간, "주문/체결시간 : " + axKHOpenAPI1.GetChejanData(908));
-                Logger(Log.실시간, "종목명 : " + axKHOpenAPI1.GetChejanData(302));
-                Logger(Log.실시간, "주문수량 : " + axKHOpenAPI1.GetChejanData(900));
-                Logger(Log.실시간, "주문가격 : " + axKHOpenAPI1.GetChejanData(901));
-                Logger(Log.실시간, "체결수량 : " + axKHOpenAPI1.GetChejanData(911));
-                Logger(Log.실시간, "체결가격 : " + axKHOpenAPI1.GetChejanData(910));
+                Logger(Log.실시간, "주문/체결시간 : " + axKHOpenAPI.GetChejanData(908));
+                Logger(Log.실시간, "종목명 : " + axKHOpenAPI.GetChejanData(302));
+                Logger(Log.실시간, "주문수량 : " + axKHOpenAPI.GetChejanData(900));
+                Logger(Log.실시간, "주문가격 : " + axKHOpenAPI.GetChejanData(901));
+                Logger(Log.실시간, "체결수량 : " + axKHOpenAPI.GetChejanData(911));
+                Logger(Log.실시간, "체결가격 : " + axKHOpenAPI.GetChejanData(910));
                 Logger(Log.실시간, "=======================================");
             }
             else if (e.sGubun == "1")
@@ -134,9 +170,9 @@ namespace OpenApi
             {
                 Logger(Log.실시간, "종목코드 : {0} | 현재가 : {1:C} | 등락율 : {2} | 누적거래량 : {3:N0} ",
                         e.sRealKey,
-                        Int32.Parse(axKHOpenAPI1.GetCommRealData(e.sRealType, 10).Trim()),
-                        axKHOpenAPI1.GetCommRealData(e.sRealType, 12).Trim(),
-                        Int32.Parse(axKHOpenAPI1.GetCommRealData(e.sRealType, 13).Trim()));
+                        Int32.Parse(axKHOpenAPI.GetCommRealData(e.sRealType, 10).Trim()),
+                        axKHOpenAPI.GetCommRealData(e.sRealType, 12).Trim(),
+                        Int32.Parse(axKHOpenAPI.GetCommRealData(e.sRealType, 13).Trim()));
             }
 
         }
@@ -163,6 +199,10 @@ namespace OpenApi
                 case Log.실시간:
                     lst실시간.Items.Add(message);
                     lst실시간.SelectedIndex = lst실시간.Items.Count - 1;
+                    break;
+                case Log.디버깅:
+                    lst디버깅.Items.Add(message);
+                    lst디버깅.SelectedIndex = lst실시간.Items.Count - 1;
                     break;
                 default:
                     break;
@@ -203,43 +243,141 @@ namespace OpenApi
 
         private void 로그아웃_Click(object sender, EventArgs e)
         {
-            DisconnectAllRealData();
-            axKHOpenAPI1.CommTerminate();
+            class1.DisconnectAllRealData();
             Logger(Log.일반, "로그아웃");
 
         }
 
-        // 실시간 연결 종료
-        private void DisconnectAllRealData()
-        {
-            for (int i = _scrNum; i > 5000; i--)
-            {
-                axKHOpenAPI1.DisconnectRealData(i.ToString());
-            }
-
-            _scrNum = 5000;
-        }
-
-
-        // 화면번호 생산
-        private string GetScrNum()
-        {
-            if (_scrNum < 9999)
-                _scrNum++;
-            else
-                _scrNum = 5000;
-
-            return _scrNum.ToString();
-        }
-
         private void 접속상태_Click(object sender, EventArgs e)
         {
-            if (axKHOpenAPI1.GetConnectState() == 0){
+            int ret = axKHOpenAPI.GetConnectState();
+                Logger(Log.일반, "Open API 연결 : "+ ret);
+            if (ret == 0){
                 Logger(Log.일반, "Open API 연결 : 미연결");
             }else{
                 Logger(Log.일반, "Open API 연결 : 연결중");
             }
 
         }
+
+        private void debugCommunicationState(CommunicationState ret)
+        {
+            if (ret == CommunicationState.Created) {
+                Logger(Log.디버깅, "CommunicationState.Created 상태");
+            } else if (ret == CommunicationState.Opening) {
+                Logger(Log.디버깅, "CommunicationState.Opening 상태");
+                //     통신 개체에서 전환 중인 것을 나타냅니다는 System.ServiceModel.CommunicationState.Opening 상태에 있는
+            } else if (ret == CommunicationState.Opened) {
+                Logger(Log.디버깅, "CommunicationState.Opened 상태");
+                //     통신 개체가 현재 열려 있고 사용할 준비가 되었습니다. 임을 나타냅니다.
+            } else if (ret == CommunicationState.Closing) {
+                Logger(Log.디버깅, "CommunicationState.Closing 상태");
+            } else if (ret == CommunicationState.Closed) {
+                Logger(Log.디버깅, "CommunicationState.Closed 상태");
+                //     통신 개체가 닫혀 서 더 이상 사용할 수 없습니다 것을 나타냅니다.
+            } else if (ret == CommunicationState.Faulted) {
+                Logger(Log.디버깅, "CommunicationState.Faulted 상태");
+                //     장애는 더 이상 사용할 수 없습니다와에서 복구할 수 없는 오류 또는 통신 개체를 발견 했음을 나타냅니다.
+            }
+        }
+
+        private void WCF_ON_Click(object sender, EventArgs e)
+        {
+            if(productsServiceHost==null) {
+
+                if (axKHOpenAPI != null) {
+                   productsServiceHost = new ServiceHost(typeof(KiwoomOpenApiService));
+                    productsServiceHost.Faulted += new EventHandler(wcfFaultHandler);
+                    productsServiceHost.UnknownMessageReceived += new EventHandler<UnknownMessageReceivedEventArgs>(wcfUnknownMessageReceived);
+                    
+                } else {
+                    Logger(Log.디버깅, "WCF_ON : 로그인을 하지 않았습니다. 먼저 로그인을 해주세요");
+                }
+               
+            } else {
+                Logger(Log.디버깅, "WCF_ON : WCF 객체가 이미 생성되었음.");
+            }
+            CommunicationState ret = productsServiceHost.State;
+            if (ret == CommunicationState.Faulted || ret == CommunicationState.Closed || ret == CommunicationState.Created) {
+                productsServiceHost.Open();
+                Logger(Log.디버깅, "WCF_ON: WCF 객체.OPEN  실행");
+            } else             {
+                Logger(Log.디버깅, "WCF_ON: WCF 객체.OPEN 열려있는 상태입니다.");
+            }
+            
+            
+        }
+
+        private void WCF_OFF_Click(object sender, EventArgs e)
+        {
+            if (productsServiceHost != null)
+            {
+                productsServiceHost.Close();
+                Logger(Log.디버깅, "WCF_OFF:호출");
+            } else
+            {
+                Logger(Log.디버깅, "WCF_OFF:wcf 객체 null");
+            }
+            
+        }
+
+        private void WCF상태_Click(object sender, EventArgs e)
+        {
+            if (productsServiceHost != null) { 
+                CommunicationState ret = productsServiceHost.State;
+                debugCommunicationState(ret);
+            } else {
+                Logger(Log.디버깅, "WCF상태:wcf 객체 null");
+            }
+
+        }
+
+        private void GetLoginInfo_Click(object sender, EventArgs e)
+        {
+            String sTag =cb_GetLoginInfo.SelectedValue.ToString();
+            Logger(Log.디버깅, "cb_GetLoginIn.Value:"+ sTag);
+            String tTag = cb_GetLoginInfo.Text;
+            Logger(Log.디버깅, "cb_GetLoginIn.Text:" + tTag);
+            if (sTag.Equals(""))
+            {
+                MessageBox.Show("사용자정보를 반환할 키값을 선택해주세요");
+                return;
+            }
+            String ret=  axKHOpenAPI.GetLoginInfo(sTag);
+            Logger(Log.디버깅, "GetLoginIn[" + sTag+"]:"+ ret);
+        }
+
+        private void GetAPIModulePath_Click(object sender, EventArgs e)
+        {
+            /*OpenAPI모듈의 경로를 반환한다.*/
+            String ret= axKHOpenAPI.GetAPIModulePath();
+            Logger(Log.디버깅, "GetAPIModulePath:" + ret);
+        }
+
+        private void GetCodeListByMarket_Click(object sender, EventArgs e)
+        {
+            String sTag = cb_GetCodeListByMarket.SelectedValue.ToString();
+            Logger(Log.디버깅, "cb_GetCodeListByMarket.Value:" + sTag);
+            String tTag = cb_GetCodeListByMarket.Text;
+            Logger(Log.디버깅, "cb_GetCodeListByMarket.Text:" + tTag);
+            if (sTag.Equals(""))
+            {
+                MessageBox.Show("시장구분을 선택해주세요");
+                return;
+            }
+            String ret = axKHOpenAPI.GetCodeListByMarket(sTag);
+            Logger(Log.디버깅, "GetCodeListByMarket[" + sTag + "]:" + ret);
+        }
+        private void wcfFaultHandler(object sender,EventArgs e)
+        {
+
+        }
+
+        private void wcfUnknownMessageReceived(object sender, UnknownMessageReceivedEventArgs e)
+        {
+            FileLog.PrintF(e.Message.ToString());
+        }
+
+        
     }
 }
