@@ -83,7 +83,7 @@
             this.lst에러.ItemHeight = 12;
             this.lst에러.Location = new System.Drawing.Point(29, 223);
             this.lst에러.Name = "lst에러";
-            this.lst에러.Size = new System.Drawing.Size(693, 88);
+            this.lst에러.Size = new System.Drawing.Size(369, 88);
             this.lst에러.TabIndex = 2;
             // 
             // label1
@@ -101,7 +101,7 @@
             this.lst일반.ItemHeight = 12;
             this.lst일반.Location = new System.Drawing.Point(29, 122);
             this.lst일반.Name = "lst일반";
-            this.lst일반.Size = new System.Drawing.Size(693, 76);
+            this.lst일반.Size = new System.Drawing.Size(369, 76);
             this.lst일반.TabIndex = 4;
             // 
             // label2
@@ -119,7 +119,7 @@
             this.lst조회.ItemHeight = 12;
             this.lst조회.Location = new System.Drawing.Point(29, 20);
             this.lst조회.Name = "lst조회";
-            this.lst조회.Size = new System.Drawing.Size(693, 76);
+            this.lst조회.Size = new System.Drawing.Size(369, 76);
             this.lst조회.TabIndex = 7;
             // 
             // label3
@@ -137,7 +137,7 @@
             this.lst실시간.ItemHeight = 12;
             this.lst실시간.Location = new System.Drawing.Point(29, 341);
             this.lst실시간.Name = "lst실시간";
-            this.lst실시간.Size = new System.Drawing.Size(693, 124);
+            this.lst실시간.Size = new System.Drawing.Size(369, 124);
             this.lst실시간.TabIndex = 9;
             // 
             // label4
@@ -151,39 +151,39 @@
             // 
             // 로그인버튼
             // 
-            this.로그인버튼.Location = new System.Drawing.Point(741, 20);
+            this.로그인버튼.Location = new System.Drawing.Point(416, 20);
             this.로그인버튼.Name = "로그인버튼";
-            this.로그인버튼.Size = new System.Drawing.Size(75, 23);
+            this.로그인버튼.Size = new System.Drawing.Size(120, 23);
             this.로그인버튼.TabIndex = 1;
-            this.로그인버튼.Text = "로그인";
+            this.로그인버튼.Text = "[1]로그인";
             this.로그인버튼.UseVisualStyleBackColor = true;
             this.로그인버튼.Click += new System.EventHandler(this.로그인_Click);
             // 
             // 로그아웃
             // 
-            this.로그아웃.Location = new System.Drawing.Point(741, 49);
+            this.로그아웃.Location = new System.Drawing.Point(416, 49);
             this.로그아웃.Name = "로그아웃";
-            this.로그아웃.Size = new System.Drawing.Size(75, 23);
+            this.로그아웃.Size = new System.Drawing.Size(120, 23);
             this.로그아웃.TabIndex = 11;
-            this.로그아웃.Text = "로그아웃";
+            this.로그아웃.Text = "[10][2]로그아웃";
             this.로그아웃.UseVisualStyleBackColor = true;
             this.로그아웃.Click += new System.EventHandler(this.로그아웃_Click);
             // 
             // 접속상태
             // 
-            this.접속상태.Location = new System.Drawing.Point(741, 78);
+            this.접속상태.Location = new System.Drawing.Point(416, 78);
             this.접속상태.Name = "접속상태";
-            this.접속상태.Size = new System.Drawing.Size(75, 23);
+            this.접속상태.Size = new System.Drawing.Size(120, 23);
             this.접속상태.TabIndex = 12;
-            this.접속상태.Text = "접속상태";
+            this.접속상태.Text = "[15]접속상태";
             this.접속상태.UseVisualStyleBackColor = true;
             this.접속상태.Click += new System.EventHandler(this.접속상태_Click);
             // 
             // WCF_ON
             // 
-            this.WCF_ON.Location = new System.Drawing.Point(741, 107);
+            this.WCF_ON.Location = new System.Drawing.Point(416, 107);
             this.WCF_ON.Name = "WCF_ON";
-            this.WCF_ON.Size = new System.Drawing.Size(75, 23);
+            this.WCF_ON.Size = new System.Drawing.Size(120, 23);
             this.WCF_ON.TabIndex = 13;
             this.WCF_ON.Text = "WCF_ON";
             this.WCF_ON.UseVisualStyleBackColor = true;
@@ -191,9 +191,9 @@
             // 
             // WCF_OFF
             // 
-            this.WCF_OFF.Location = new System.Drawing.Point(741, 136);
+            this.WCF_OFF.Location = new System.Drawing.Point(416, 136);
             this.WCF_OFF.Name = "WCF_OFF";
-            this.WCF_OFF.Size = new System.Drawing.Size(75, 23);
+            this.WCF_OFF.Size = new System.Drawing.Size(120, 23);
             this.WCF_OFF.TabIndex = 14;
             this.WCF_OFF.Text = "WCF_OFF";
             this.WCF_OFF.UseVisualStyleBackColor = true;
@@ -203,15 +203,15 @@
             // 
             this.lst디버깅.FormattingEnabled = true;
             this.lst디버깅.ItemHeight = 12;
-            this.lst디버깅.Location = new System.Drawing.Point(741, 221);
+            this.lst디버깅.Location = new System.Drawing.Point(416, 221);
             this.lst디버깅.Name = "lst디버깅";
-            this.lst디버깅.Size = new System.Drawing.Size(331, 244);
+            this.lst디버깅.Size = new System.Drawing.Size(315, 244);
             this.lst디버깅.TabIndex = 15;
             // 
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(739, 206);
+            this.label5.Location = new System.Drawing.Point(414, 206);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(54, 12);
             this.label5.TabIndex = 16;
@@ -219,9 +219,9 @@
             // 
             // WCF상태
             // 
-            this.WCF상태.Location = new System.Drawing.Point(741, 165);
+            this.WCF상태.Location = new System.Drawing.Point(416, 165);
             this.WCF상태.Name = "WCF상태";
-            this.WCF상태.Size = new System.Drawing.Size(75, 23);
+            this.WCF상태.Size = new System.Drawing.Size(120, 23);
             this.WCF상태.TabIndex = 17;
             this.WCF상태.Text = "WCF상태";
             this.WCF상태.UseVisualStyleBackColor = true;
@@ -233,7 +233,7 @@
             this.GetLoginInfo.Name = "GetLoginInfo";
             this.GetLoginInfo.Size = new System.Drawing.Size(153, 23);
             this.GetLoginInfo.TabIndex = 18;
-            this.GetLoginInfo.Text = "GetLoginInfo";
+            this.GetLoginInfo.Text = "[4]GetLoginInfo";
             this.GetLoginInfo.UseVisualStyleBackColor = true;
             this.GetLoginInfo.Click += new System.EventHandler(this.GetLoginInfo_Click);
             // 
@@ -247,11 +247,11 @@
             // 
             // GetAPIModulePath
             // 
-            this.GetAPIModulePath.Location = new System.Drawing.Point(896, 190);
+            this.GetAPIModulePath.Location = new System.Drawing.Point(571, 190);
             this.GetAPIModulePath.Name = "GetAPIModulePath";
             this.GetAPIModulePath.Size = new System.Drawing.Size(153, 23);
             this.GetAPIModulePath.TabIndex = 20;
-            this.GetAPIModulePath.Text = "GetAPIModulePath";
+            this.GetAPIModulePath.Text = "[13]GetAPIModulePath";
             this.GetAPIModulePath.UseVisualStyleBackColor = true;
             this.GetAPIModulePath.Click += new System.EventHandler(this.GetAPIModulePath_Click);
             // 
@@ -269,7 +269,7 @@
             this.GetCodeListByMarket.Name = "GetCodeListByMarket";
             this.GetCodeListByMarket.Size = new System.Drawing.Size(153, 23);
             this.GetCodeListByMarket.TabIndex = 22;
-            this.GetCodeListByMarket.Text = "GetCodeListByMarket";
+            this.GetCodeListByMarket.Text = "[14]GetCodeListByMarket";
             this.GetCodeListByMarket.UseVisualStyleBackColor = true;
             this.GetCodeListByMarket.Click += new System.EventHandler(this.GetCodeListByMarket_Click);
             // 
@@ -277,7 +277,7 @@
             // 
             this.groupBox1.Controls.Add(this.cb_GetLoginInfo);
             this.groupBox1.Controls.Add(this.GetLoginInfo);
-            this.groupBox1.Location = new System.Drawing.Point(889, 20);
+            this.groupBox1.Location = new System.Drawing.Point(564, 20);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(167, 85);
             this.groupBox1.TabIndex = 25;
@@ -288,7 +288,7 @@
             // 
             this.groupBox2.Controls.Add(this.GetCodeListByMarket);
             this.groupBox2.Controls.Add(this.cb_GetCodeListByMarket);
-            this.groupBox2.Location = new System.Drawing.Point(890, 111);
+            this.groupBox2.Location = new System.Drawing.Point(565, 111);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Size = new System.Drawing.Size(166, 71);
             this.groupBox2.TabIndex = 26;
@@ -299,7 +299,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1178, 538);
+            this.ClientSize = new System.Drawing.Size(1204, 538);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.GetAPIModulePath);
