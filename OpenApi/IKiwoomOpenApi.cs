@@ -144,5 +144,91 @@ namespace WcfServiceLibrary
         String GetThemeGroupList(int nType);
 
 
+
+
+
+
+        /// <summary>
+        ///[28] 설명 테마코드에 소속된 종목코드를 반환한다.
+        ///입력값 strThemeCode – 테마코드
+        ///반환값 종목코드 리스트
+        ///비고 반환값의 종목코드간 구분은 ‘;’
+        ///Ex) A000660;A005930
+        /// </summary>
+        [OperationContract]
+        String GetThemeGroupCode(String strThemeCode);
+
+
+
+        /// <summary>
+        ///[29] 설명 지수선물 리스트를 반환한다.
+        ///반환값 종목코드 리스트
+        ///비고 반환값의 종목코드간 구분은 ‘;’
+        ///Ex) 101J9000;101JC000
+        /// </summary>
+        [OperationContract]
+        String GetFutureList();
+
+
+        /// <summary>
+        ///[30] 설명 지수선물 코드를 반환한다.
+        ///입력값 nIndex – 0~3 지수선물코드, 4~7 지수스프레드
+        ///반환값 종목코드
+        ///비고 Ex) 최근월선물 - openApi.GetFutureCodeByInex(0);
+        ///최근월스프레드 - openApi.GetFutureCodeByInex(4);
+        /// </summary>
+        [OperationContract]
+        String GetFutureCodeByIndex(int nIndex);
+
+        /// <summary>
+        ///[31] 설명 지수옵션 행사가 리스트를 반환한다.
+        ///반환값 행사가
+        ///비고 반환값의 행사가간 구분은 ‘;’
+        ///Ex) 265.00;262.50;260.00
+        /// </summary>
+        [OperationContract]
+        String GetActPriceList();
+
+        /// <summary>
+        ///[32] 설명 지수옵션 월물 리스트를 반환한다.
+        ///반환값 월물
+        ///비고
+        ///반환값의 월물간 구분은 ‘;’
+        ///Ex) 201412;201409;201408;201407;201407;201408;201409;201412
+        /// </summary>
+        [OperationContract]
+        String GetMonthList();
+
+
+
+        /// <summary>
+        ///[43] 설명 주식선옵 기초자산코드/종목명을 반환한다.
+        ///반환값 기초자산코드/종목명, 코드와 종목명 구분은 ‘|’ 코드간 구분은’;’
+        ////Ex) 211J8045|삼성전자 C 201408;212J8009|SK텔레콤 C 201408
+        ///비고 Ex) openApi.GetSFOBasisAssetList();
+        /// </summary>
+        [OperationContract]
+        String GetSFOBasisAssetList();
+
+
+
+        /// <summary>
+        ///[44] 설명 지수옵션 ATM을 반환한다.
+        ///반환값 ATM
+        ///비고 Ex) openApi.GetOptionATM();
+        /// </summary>
+        [OperationContract]
+        String GetOptionATM();
+
+
+        /// <summary>
+        ///[46] 설명 회원사 코드와 이름을 반환합니다.
+        ///반환값 회원사코드|회원사명;회원사코드|회원사명;…
+        ///비고 Ex) openApi.GetBranchCodeName();
+        /// </summary>
+        [OperationContract]
+        String GetBranchCodeName();
+        
+
     }
 }
