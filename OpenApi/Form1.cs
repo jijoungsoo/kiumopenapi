@@ -10,6 +10,9 @@ using System.Windows.Forms;
 using System.ServiceModel;
 using KiwoomCode;
 using WcfServiceLibrary;
+using OpenApi.ReceiveTrData;
+using System.Threading;
+using System.Collections;
 
 namespace OpenApi
 {
@@ -24,7 +27,6 @@ namespace OpenApi
             class1 = Class1.getClass1Instance();
             class1.setAxKHOpenAPIInstance(this.axKHOpenAPI);
         }
-
         private void init()
         {
             Dictionary<String, String> comboSource = new Dictionary<String, String>();
@@ -72,6 +74,31 @@ namespace OpenApi
 
         private void axKHOpenAPI_OnReceiveTrData(object sender, AxKHOpenAPILib._DKHOpenAPIEvents_OnReceiveTrDataEvent e)
         {
+            FileLog.PrintF("====================axKHOpenAPI_OnReceiveTrData===============================");
+            ReceiveTrDataFactory rtf = new ReceiveTrDataFactory();
+            rtf.getReceiveTrData(axKHOpenAPI, e);
+
+            Logger(Log.디버깅, "====================axKHOpenAPI_OnReceiveTrData===============================");
+            
+            int nCnt = axKHOpenAPI.GetRepeatCnt(e.sTrCode, e.sRQName);
+            //FileLog.PrintF(String.Format("화면번호:{0} | RQName:{1} | TRCode:{2} | sRecordName:{3} |  sPreNext:{4}", e.sScrNo, e.sRQName, e.sTrCode, e.sRecordName, e.sPrevNext));
+
+            /*
+            sScrNo – 화면번호
+            sRQName – 사용자구분 명
+            sTrCode – Tran 명
+            sRecordName – Record 명
+            sPreNext – 연속조회 유무
+            */
+            if ("[0346]실시간계좌관리(T)-잔고확인".Equals(e.sRQName))
+            {
+                FileLog.PrintF("====================axKHOpenAPI_OnReceiveTrData===============================1");
+                String tmp= axKHOpenAPI.CommGetData(e.sTrCode, "", e.sRQName, 0, "예수금").Trim();
+                FileLog.PrintF("====================axKHOpenAPI_OnReceiveTrData===============================1:" + tmp);
+
+
+            }
+
 
             if (e.sRQName == "주식주문")
             {
@@ -89,7 +116,7 @@ namespace OpenApi
             // OPT1001 : 주식기본정보
             else if (e.sRQName == "주식기본정보")
             {
-                int nCnt = axKHOpenAPI.GetRepeatCnt(e.sTrCode, e.sRQName);
+                 nCnt = axKHOpenAPI.GetRepeatCnt(e.sTrCode, e.sRQName);
 
                 for (int i = 0; i < nCnt; i++)
                 {
@@ -100,27 +127,12 @@ namespace OpenApi
                         Int32.Parse(axKHOpenAPI.CommGetData(e.sTrCode, "", e.sRQName, i, "거래량").Trim()));
                 }
             }
-            // OPT10081 : 주식일봉차트조회
-            else if (e.sRQName == "주식일봉차트조회")
-            {
-                int nCnt = axKHOpenAPI.GetRepeatCnt(e.sTrCode, e.sRQName);
-
-                for (int i = 0; i < nCnt; i++)
-                {
-                    Logger(Log.조회, "{0} | 현재가:{1:N0} | 거래량:{2:N0} | 시가:{3:N0} | 고가:{4:N0} | 저가:{5:N0} ",
-                        axKHOpenAPI.CommGetData(e.sTrCode, "", e.sRQName, i, "일자").Trim(),
-                        Int32.Parse(axKHOpenAPI.CommGetData(e.sTrCode, "", e.sRQName, i, "현재가").Trim()),
-                        Int32.Parse(axKHOpenAPI.CommGetData(e.sTrCode, "", e.sRQName, i, "거래량").Trim()),
-                        Int32.Parse(axKHOpenAPI.CommGetData(e.sTrCode, "", e.sRQName, i, "시가").Trim()),
-                        Int32.Parse(axKHOpenAPI.CommGetData(e.sTrCode, "", e.sRQName, i, "고가").Trim()),
-                        Int32.Parse(axKHOpenAPI.CommGetData(e.sTrCode, "", e.sRQName, i, "저가").Trim()));
-                }
-            }
-
         }
 
         private void axKHOpenAPI_OnEventConnect(object sender, AxKHOpenAPILib._DKHOpenAPIEvents_OnEventConnectEvent e)
         {
+            FileLog.PrintF("====================axKHOpenAPI_OnEventConnect===============================");
+            Logger(Log.디버깅, "====================axKHOpenAPI_OnEventConnect===============================");
             if (Error.IsError(e.nErrCode))
             {
                 Logger(Log.일반, "[로그인 처리결과] " + Error.GetErrorMessage());
@@ -133,6 +145,8 @@ namespace OpenApi
 
         private void axKHOpenAPI_OnReceiveChejanData(object sender, AxKHOpenAPILib._DKHOpenAPIEvents_OnReceiveChejanDataEvent e)
         {
+            FileLog.PrintF("====================axKHOpenAPI_OnReceiveChejanData===============================");
+            Logger(Log.디버깅, "====================axKHOpenAPI_OnReceiveChejanData===============================");
             if (e.sGubun == "0")
             {
                 Logger(Log.실시간, "구분 : 주문체결통보");
@@ -157,15 +171,20 @@ namespace OpenApi
 
         private void axKHOpenAPI_OnReceiveMsg(object sender, AxKHOpenAPILib._DKHOpenAPIEvents_OnReceiveMsgEvent e)
         {
-            Logger(Log.조회, "===================================================");
+            FileLog.PrintF("====================axKHOpenAPI_OnReceiveMsg===============================");
+            Logger(Log.디버깅, "====================axKHOpenAPI_OnReceiveMsg===============================");
             Logger(Log.조회, "화면번호:{0} | RQName:{1} | TRCode:{2} | 메세지:{3}", e.sScrNo, e.sRQName, e.sTrCode, e.sMsg);
+            FileLog.PrintF(String.Format("화면번호:{0} | RQName:{1} | TRCode:{2} | 메세지:{3}", e.sScrNo, e.sRQName, e.sTrCode, e.sMsg)) ;
+            
         }
 
         private void axKHOpenAPI_OnReceiveRealData(object sender, AxKHOpenAPILib._DKHOpenAPIEvents_OnReceiveRealDataEvent e)
         {
+            FileLog.PrintF("====================axKHOpenAPI_OnReceiveRealData===============================");
+            Logger(Log.디버깅, "====================axKHOpenAPI_OnReceiveRealData===============================");
             Logger(Log.실시간, "종목코드 : {0} | RealType : {1} | RealData : {2}",
                 e.sRealKey, e.sRealType, e.sRealData);
-
+            FileLog.PrintF(String.Format("종목코드 : {0} | RealType : {1} | RealData : {2}", e.sRealKey, e.sRealType, e.sRealData));
             if (e.sRealType == "주식시세")
             {
                 Logger(Log.실시간, "종목코드 : {0} | 현재가 : {1:C} | 등락율 : {2} | 누적거래량 : {3:N0} ",
@@ -185,24 +204,120 @@ namespace OpenApi
             switch (type)
             {
                 case Log.조회:
-                    lst조회.Items.Add(message);
-                    lst조회.SelectedIndex = lst조회.Items.Count - 1;
+                    if (lst조회.InvokeRequired)
+                    {
+                        lst조회.BeginInvoke(new Action(() => { 
+                            lst조회.Items.Add(message);
+                            if (lst조회.Items.Count > 20)
+                            {
+                                lst조회.Items.Clear();
+                            }
+                            lst조회.SelectedIndex = lst조회.Items.Count - 1;
+                        }));
+
+                    } else {
+                        lst조회.Items.Add(message);
+                        if (lst조회.Items.Count > 20)
+                        {
+                            lst조회.Items.Clear();
+                        }
+                        lst조회.SelectedIndex = lst조회.Items.Count - 1;
+                    }
                     break;
                 case Log.에러:
-                    lst에러.Items.Add(message);
-                    lst에러.SelectedIndex = lst에러.Items.Count - 1;
+                    if (lst에러.InvokeRequired)
+                    {
+                        lst에러.BeginInvoke(new Action(() =>
+                        {
+                            lst에러.Items.Add(message);
+                            if (lst에러.Items.Count > 20)
+                            {
+                                lst에러.Items.Clear();
+                            }
+                            lst에러.SelectedIndex = lst에러.Items.Count - 1;
+                        }));
+                     
+                    } else
+                    {
+                        lst에러.Items.Add(message);
+                        if (lst에러.Items.Count > 20)
+                        {
+                            lst에러.Items.Clear();
+                        }
+                        lst에러.SelectedIndex = lst에러.Items.Count - 1;
+
+                    }
                     break;
+
                 case Log.일반:
-                    lst일반.Items.Add(message);
-                    lst일반.SelectedIndex = lst일반.Items.Count - 1;
+                    if (lst일반.InvokeRequired)
+                    {
+                        lst일반.BeginInvoke(new Action(() =>
+                        {
+                            lst일반.Items.Add(message);
+                            if (lst일반.Items.Count > 20)
+                            {
+                                lst일반.Items.Clear();
+                            }
+                            lst일반.SelectedIndex = lst일반.Items.Count - 1;
+                        }));
+                    } else
+                    {
+                        lst일반.Items.Add(message);
+                        if (lst일반.Items.Count > 20)
+                        {
+                            lst일반.Items.Clear();
+                        }
+                        lst일반.SelectedIndex = lst일반.Items.Count - 1;
+                    }
+
+                        
                     break;
                 case Log.실시간:
-                    lst실시간.Items.Add(message);
-                    lst실시간.SelectedIndex = lst실시간.Items.Count - 1;
+                    if (lst실시간.InvokeRequired)
+                    {
+                        lst실시간.BeginInvoke(new Action(() =>
+                        {
+                            lst실시간.Items.Add(message);
+                            if (lst실시간.Items.Count > 20)
+                            {
+                                lst실시간.Items.Clear();
+                            }
+                            lst실시간.SelectedIndex = lst실시간.Items.Count - 1;
+                        }));
+                    } else
+                    {
+                        lst실시간.Items.Add(message);
+                        if (lst실시간.Items.Count > 20)
+                        {
+                            lst실시간.Items.Clear();
+                        }
+                        lst실시간.SelectedIndex = lst실시간.Items.Count - 1;
+                    }
+                        
                     break;
                 case Log.디버깅:
-                    lst디버깅.Items.Add(message);
-                    lst디버깅.SelectedIndex = lst실시간.Items.Count - 1;
+                    if (lst디버깅.InvokeRequired)
+                    {
+                        lst디버깅.BeginInvoke(new Action(() =>
+                        {
+                            lst디버깅.Items.Add(message);
+                            if (lst디버깅.Items.Count > 20)
+                            {
+                                lst디버깅.Items.Clear();
+                            }
+                            lst디버깅.SelectedIndex = lst디버깅.Items.Count - 1;
+                        }));                        
+                    } else
+                    {
+                        lst디버깅.Items.Add(message);
+                        if (lst디버깅.Items.Count > 20)
+                        {
+                            lst디버깅.Items.Clear();
+                        }
+                        lst디버깅.SelectedIndex = lst디버깅.Items.Count - 1;
+                    }
+                        
                     break;
                 default:
                     break;
@@ -211,6 +326,8 @@ namespace OpenApi
 
         private void axKHOpenAPI_OnReceiveRealCondition(object sender, AxKHOpenAPILib._DKHOpenAPIEvents_OnReceiveRealConditionEvent e)
         {
+            FileLog.PrintF("====================axKHOpenAPI_OnReceiveRealCondition===============================");
+            Logger(Log.디버깅, "====================axKHOpenAPI_OnReceiveRealCondition===============================");
             Logger(Log.실시간, "========= 조건조회 실시간 편입/이탈 ==========");
             Logger(Log.실시간, "[종목코드] : " + e.sTrCode);
             Logger(Log.실시간, "[실시간타입] : " + e.strType);
@@ -220,6 +337,8 @@ namespace OpenApi
 
         private void axKHOpenAPI_OnReceiveTrCondition(object sender, AxKHOpenAPILib._DKHOpenAPIEvents_OnReceiveTrConditionEvent e)
         {
+            FileLog.PrintF("====================axKHOpenAPI_OnReceiveTrCondition===============================");
+            Logger(Log.디버깅, "====================axKHOpenAPI_OnReceiveTrCondition===============================");
             Logger(Log.조회, "[화면번호] : " + e.sScrNo);
             Logger(Log.조회, "[종목리스트] : " + e.strCodeList);
             Logger(Log.조회, "[조건명] : " + e.strConditionName);
@@ -230,6 +349,8 @@ namespace OpenApi
 
         private void axKHOpenAPI_OnReceiveConditionVer(object sender, AxKHOpenAPILib._DKHOpenAPIEvents_OnReceiveConditionVerEvent e)
         {
+            FileLog.PrintF("====================axKHOpenAPI_OnReceiveConditionVer===============================");
+            Logger(Log.디버깅, "====================axKHOpenAPI_OnReceiveConditionVer===============================");
             if (e.lRet == 1)
             {
                 Logger(Log.일반, "[이벤트] 조건식 저장 성공");
@@ -281,31 +402,45 @@ namespace OpenApi
             }
         }
 
-        private void WCF_ON_Click(object sender, EventArgs e)
+        // procedure to run on a new thread
+        private void StartService()
         {
-            if(productsServiceHost==null) {
 
-                if (axKHOpenAPI != null) {
-                   productsServiceHost = new ServiceHost(typeof(KiwoomOpenApiService));
+            if (productsServiceHost == null)
+            {
+
+                if (axKHOpenAPI != null)
+                {
+                    productsServiceHost = new ServiceHost(typeof(KiwoomOpenApiService));
                     productsServiceHost.Faulted += new EventHandler(wcfFaultHandler);
                     productsServiceHost.UnknownMessageReceived += new EventHandler<UnknownMessageReceivedEventArgs>(wcfUnknownMessageReceived);
-                    
-                } else {
+                }
+                else {
                     Logger(Log.디버깅, "WCF_ON : 로그인을 하지 않았습니다. 먼저 로그인을 해주세요");
                 }
-               
-            } else {
+
+            }
+            else {
                 Logger(Log.디버깅, "WCF_ON : WCF 객체가 이미 생성되었음.");
             }
             CommunicationState ret = productsServiceHost.State;
-            if (ret == CommunicationState.Faulted || ret == CommunicationState.Closed || ret == CommunicationState.Created) {
+            if (ret == CommunicationState.Faulted || ret == CommunicationState.Closed || ret == CommunicationState.Created)
+            {
                 productsServiceHost.Open();
                 Logger(Log.디버깅, "WCF_ON: WCF 객체.OPEN  실행");
-            } else             {
+            }
+            else {
                 Logger(Log.디버깅, "WCF_ON: WCF 객체.OPEN 열려있는 상태입니다.");
             }
-            
-            
+        }
+        Thread t;
+        private void WCF_ON_Click(object sender, EventArgs e)
+        {
+            // starting the thread
+            if(t==null) { 
+                t = new Thread(StartService);
+                t.Start();
+            }
         }
 
         private void WCF_OFF_Click(object sender, EventArgs e)
@@ -345,6 +480,10 @@ namespace OpenApi
             }
             String ret=  axKHOpenAPI.GetLoginInfo(sTag);
             Logger(Log.디버깅, "GetLoginIn[" + sTag+"]:"+ ret);
+            if(sTag.Equals("ACCNO"))
+            {
+                tx_account.Text = ret;
+            }
         }
 
         private void GetAPIModulePath_Click(object sender, EventArgs e)
@@ -378,6 +517,267 @@ namespace OpenApi
             FileLog.PrintF(e.Message.ToString());
         }
 
-        
+        private void GetBalance_Click(object sender, EventArgs e)
+        {
+            String account = tx_account.Text;
+            String password = tx_password.Text;
+
+            Logger(Log.디버깅, "tx_account.Text:" + account);
+            Logger(Log.디버깅, "tx_password.Text:" + password);
+            if (account.Equals(""))
+            {
+                MessageBox.Show("계좌번호를 입력해주세요.");
+                return;
+            }
+
+            if (password.Equals(""))
+            {
+                MessageBox.Show("이 패스워드는 의미 없음 하단에 트레이아이콘에서 설정을 눌러서 비밀번호를 저장해야함.");
+                return;
+            }
+
+            axKHOpenAPI.SetInputValue("계좌번호", account.Trim());
+            axKHOpenAPI.SetInputValue("비밀번호", password.Trim());
+            axKHOpenAPI.SetInputValue("상장폐지조회구분"    , "0");
+            axKHOpenAPI.SetInputValue("비밀번호입력매체구분", "00");
+ //int nRet = axKHOpenAPI.CommRqData("RQName", "OPW00004", 0, "0200");
+            int nRet = axKHOpenAPI.CommRqData("[0346]실시간계좌관리(T)-잔고확인", "OPW00004", 0, "화면번호");
+            if (Error.IsError(nRet))
+            {
+                Logger(Log.일반, "[OPW00004] : " + Error.GetErrorMessage());
+            }
+            else
+            {
+                Logger(Log.에러, "[OPW00004] : " + Error.GetErrorMessage());
+            }
+            Logger(Log.디버깅, "GetBalance_Click::CommRqData::ret:" + nRet);
+            
+        }
+
+        private void lst조회_KeyUp(object sender, KeyEventArgs e)
+        {
+            if (sender != lst조회) return;
+
+            if (e.Control && e.KeyCode == Keys.C) 
+                CopySelectedValuesToClipboard();
+        }
+
+        private void CopySelectedValuesToClipboard()
+        {
+            var builder = new StringBuilder();
+            foreach (ListViewItem item in lst조회.SelectedItems)
+                builder.AppendLine(item.SubItems[1].Text);
+
+            Clipboard.SetText(builder.ToString());
+        }
+
+
+        private void threadJob(OpenApi.Spell.spellOpt spellOpt)
+        {
+            List<String> stockCodeList = Class1.getClass1Instance().getStockCodeList();
+            for (int i = 0; i < stockCodeList.Count; i++)
+            {
+                OpenApi.Spell.spellOpt tmp= spellOpt.ShallowCopy();
+                String stockCode = stockCodeList[i];
+                String sScrNo = Class1.getClass1Instance().GetScrNum();
+                String keyStockCodeLayout = "sRQName:{0}|sTrCode:{1}|sScreenNo:{2}";
+                String keyStockCode = String.Format(keyStockCodeLayout
+                    , tmp.sRQNAME
+                    , tmp.sTrCode
+                    , sScrNo
+                );
+                String keyLayout = "sRQName:{0}|sTrCode:{1}|sScreenNo:{2}|stockCode:{3}";
+                String key = String.Format(keyLayout
+                   , tmp.sRQNAME
+                    , tmp.sTrCode
+                    , sScrNo
+                    , stockCode
+                );
+                tmp.sScreenNo = sScrNo;
+                tmp.stockCode = stockCode;
+                tmp.key = key;
+
+              //  FileLog.PrintF("threadJob keyStockCode="+ keyStockCode);
+              //  FileLog.PrintF("threadJob key=" + key);
+
+                //String logDate = DateTime.Today.ToString("yyyyMMdd");
+                
+                String path = tmp.GetFileName();
+                if (!System.IO.File.Exists(path))
+                {
+                    Class1.getClass1Instance().EnqueueByOrderQueue(tmp);
+                    Class1.getClass1Instance().AddSpellDictionary(key, tmp);
+                    Class1.getClass1Instance().AddStockCodeDictionary(keyStockCode, stockCode);
+                }
+
+                
+
+            }
+        }
+
+        private void GetDayStock_Click(object sender, EventArgs e)
+        {
+            String startDate = tx_startDate.Text;
+            String endDate = tx_endDate.Text;
+            String sTrCode = "OPT10081";
+            String sRQName = "주식일봉차트조회";
+
+            OpenApi.Spell.spellOpt spellOpt10081 = new OpenApi.Spell.spellOpt();
+            spellOpt10081.sRQNAME = sRQName;
+            spellOpt10081.sTrCode = sTrCode;
+            //spellOpt10081.stockCode = 종목코드;
+            spellOpt10081.startDate = startDate;
+            spellOpt10081.endDate = endDate;
+            spellOpt10081.nPrevNext = 0;
+            spellOpt10081.modifyGubun = "1";
+            //spellOpt10081.sScreenNo = sScrNo;
+
+            String 종목코드 = tx_stockCode.Text.Trim();
+            if (종목코드.Equals("ALL"))
+            {
+                threadJob(spellOpt10081);
+                FileLog.PrintF("GetDayStock_Click threadJob");
+
+            }  else
+            {
+                String sScrNo = Class1.getClass1Instance().GetScrNum();
+                String keyStockCodeLayout = "sRQName:{0}|sTrCode:{1}|sScreenNo:{2}";
+                String keyStockCode = String.Format(keyStockCodeLayout
+                    , sRQName
+                    , sTrCode
+                    , sScrNo
+                );
+                String keyLayout = "sRQName:{0}|sTrCode:{1}|sScreenNo:{2}|stockCode:{3}";
+                String key = String.Format(keyLayout
+                   , sRQName
+                    , sTrCode
+                    , sScrNo
+                    , 종목코드
+                );
+                FileLog.PrintF("keyStockCode  ==" + keyStockCode);
+
+                axKHOpenAPI.SetInputValue("종목코드", 종목코드);
+                axKHOpenAPI.SetInputValue("기준일자", endDate);
+                axKHOpenAPI.SetInputValue("수정주가구분", "1");
+
+
+                int nRet = axKHOpenAPI.CommRqData(sRQName, sTrCode, 0, sScrNo);
+
+                if (Error.IsError(nRet))
+                {
+                    Logger(Log.일반, "[OPT10081] : " + Error.GetErrorMessage());
+                }
+                else
+                {
+                    Logger(Log.에러, "[OPT10081] : " + Error.GetErrorMessage());
+                }
+            }    
+        }
+
+        private void GetStockOrgan_Click(object sender, EventArgs e)
+        {
+            string 매매구분 = null;
+            foreach (Control control in this.매매구분.Controls)
+            {
+                if (control is RadioButton)
+                {
+                    RadioButton radio = control as RadioButton;
+                    if (radio.Checked)
+                    {
+                        매매구분 = radio.Tag.ToString();
+                    }
+                }
+            }
+            // Search second GroupBox.
+            string 금액수량구분 = null;
+            foreach (Control control in this.금액수량구분.Controls)
+            {
+                if (control is RadioButton)
+                {
+                    RadioButton radio = control as RadioButton;
+                    if (radio.Checked)
+                    {
+                        금액수량구분 = radio.Tag.ToString();
+                    }
+                }
+            }
+            String stockCode=this.tx_stockCode_1.Text.ToString();
+            String startDate = this.tx_startDate_1.Text.ToString();
+            String endDate = this.tx_endDate_1.Text.ToString();
+            String sRQName = "종목별투자자기관별차트요청";
+            String sTrCode = "OPT10059";
+            String 단위구분 = "1";
+
+
+            FileLog.PrintF("GetStockOrgan_Click stockCode=" + stockCode);
+            FileLog.PrintF("GetStockOrgan_Click startDate=" + startDate);
+            FileLog.PrintF("GetStockOrgan_Click endDate=" + endDate);
+            FileLog.PrintF("GetStockOrgan_Click 매매구분="+ 매매구분);
+            FileLog.PrintF("GetStockOrgan_Click 금액수량구분=" + 금액수량구분);
+            FileLog.PrintF("GetStockOrgan_Click 단위구분=" + 단위구분);
+
+            OpenApi.Spell.spellOpt spellOpt10060 = new OpenApi.Spell.spellOpt();
+            spellOpt10060.sRQNAME = sRQName;
+            spellOpt10060.sTrCode = sTrCode;
+            //spellOpt10060.stockCode = stockCode;
+            spellOpt10060.startDate = startDate;
+            spellOpt10060.endDate = endDate;
+            spellOpt10060.nPrevNext = 0;
+            spellOpt10060.priceOrAmount = 금액수량구분;
+            spellOpt10060.buyOrSell = 매매구분;
+            //spellOpt10060.sScreenNo = sScrNo;
+
+
+
+
+            if (stockCode.Equals("ALL"))
+            {
+                threadJob(spellOpt10060);
+                FileLog.PrintF("GetStockOrgan_Click threadJob");
+            }
+            else
+            {
+                String sScrNo = Class1.getClass1Instance().GetScrNum();
+                String keyStockCodeLayout = "sRQName:{0}|sTrCode:{1}|sScreenNo:{2}";
+                String keyStockCode = String.Format(keyStockCodeLayout
+                    , sRQName
+                    , sTrCode
+                    , sScrNo
+                );
+                String keyLayout = "sRQName:{0}|sTrCode:{1}|sScreenNo:{2}|stockCode:{3}";
+                String key = String.Format(keyLayout
+                   , sRQName
+                    , sTrCode
+                    , sScrNo
+                    , stockCode
+                );
+                FileLog.PrintF("keyStockCode  ==" + keyStockCode);
+                /*일자 = YYYYMMDD(20160101 연도4자리, 월 2자리, 일 2자리 형식)*/
+                axKHOpenAPI.SetInputValue("일자", endDate);
+                /*종목코드 = 전문 조회할 종목코드*/
+                axKHOpenAPI.SetInputValue("종목코드", stockCode);
+                /*금액수량구분 = 1:금액, 2:수량*/
+                axKHOpenAPI.SetInputValue("금액수량구분"  , 금액수량구분);
+                /*매매구분 = 0:순매수, 1:매수, 2:매도*/
+                axKHOpenAPI.SetInputValue("매매구분"    , 매매구분);
+                /*단위구분 = 1000:천주, 1:단주*/
+                axKHOpenAPI.SetInputValue("단위구분"    , "1");
+
+
+                int nRet = axKHOpenAPI.CommRqData(sRQName, sTrCode, 0, sScrNo);
+
+                if (Error.IsError(nRet))
+                {
+                    Logger(Log.일반, "[OPT10060] : " + Error.GetErrorMessage());
+                }
+                else
+                {
+                    Logger(Log.에러, "[OPT10060] : " + Error.GetErrorMessage());
+                }
+            }
+
+
+        }
     }
+
 }

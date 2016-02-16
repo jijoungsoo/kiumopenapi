@@ -22,13 +22,13 @@ namespace WcfServiceLibrary
 
 
         [OperationContract]
-        [WebGet(UriTemplate="test", ResponseFormat = WebMessageFormat.Xml)]
+        [WebGet(UriTemplate = "test", ResponseFormat = WebMessageFormat.Xml)]
         string test();
 
         // TODO: 여기에 서비스 작업을 추가합니다.
 
 
-            
+
         /// <summary>
         /// [4]로그인한 사용자 정보를 반환한다.
         /// ACCOUNT_CNT – 전체 계좌 개수를 반환한다.
@@ -228,7 +228,19 @@ namespace WcfServiceLibrary
         /// </summary>
         [OperationContract]
         String GetBranchCodeName();
-        
 
+
+        /// <summary>
+        ///[101] 설명 주식 일일 데이터를 주식이 생성된 일부터 받아온다.
+        ///입력값
+        ///strCode : 종목코드
+        ///stockDate: YYYYMMDD  문자열 ex)20160122
+        ////반환값  
+        /// 성공유무 데이터는 onReceived쪽에서 soap로 쏴줌
+        /// </summary>
+        [OperationContract]
+        [WebInvoke(BodyStyle = WebMessageBodyStyle.Wrapped)]
+        String GetOpt10081(String strCode, String startDate, String endDate);
     }
+
 }

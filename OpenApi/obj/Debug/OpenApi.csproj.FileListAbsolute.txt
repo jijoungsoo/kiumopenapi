@@ -26,3 +26,4 @@ C:\Users\jijs7\Documents\Visual Studio 2015\Projects\kiumopenapi\OpenApi\bin\Deb
 C:\Users\jijs7\Documents\Visual Studio 2015\Projects\kiumopenapi\OpenApi\obj\Debug\OpenApi.csprojResolveAssemblyReference.cache
 C:\Users\jijs7\Documents\Visual Studio 2015\Projects\kiumopenapi\OpenApi\obj\Debug\OpenApi.exe
 C:\Users\jijs7\Documents\Visual Studio 2015\Projects\kiumopenapi\OpenApi\obj\Debug\OpenApi.pdb
+C:\Users\jijs7\Documents\Visual Studio 2015\Projects\kiumopenapi\OpenApi\bin\Debug\MySql.Data.dll

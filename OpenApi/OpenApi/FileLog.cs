@@ -3,27 +3,49 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Threading;
 using KiwoomCode;
+using System.Collections.Concurrent;
 
 namespace OpenApi
 {
     class FileLog
     {
         private static string path = System.Reflection.Assembly.GetExecutingAssembly().Location;
-
+        private static readonly object locker = new object();
         public static void PrintF(String line)
         {
-            path = System.IO.Path.GetDirectoryName(path);
-            path = path + "\\log.log";
-            System.IO.StreamWriter file = new System.IO.StreamWriter(path, true);
-            file.WriteLine(line);
-            file.Close();
+            //   Console.WriteLine("PrintF");
+            /*
+            음 이것도.. UI 쓰레드에서 돌리면 부하가 걸리는구나..
+            그럼 결국엔.. 이것도.. 큐에 넣었다가
+            쓰레드로 파일에 쓰는 작업을 해야겠네..
+
+            */
+            lock (locker)
+            {
+                String tmp1 = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                line = "[" + tmp1 + "]" + line;
+                path = System.IO.Path.GetDirectoryName(path);
+                path = path + "\\log.log";
+                System.IO.StreamWriter file = new System.IO.StreamWriter(path, true);
+                file.WriteLine(line);
+                file.Close();
+            }
+
+            /* 오히려 쓰레드가 더 느리네.. 쓰레드 삭제.
+            Thread t1 = new Thread(() => WirteFile(line));
+            t1.Start();
+            */
+        }
+        private static void WirteFile(String line)
+        {
+      
         }
 
 
-
-        // 로그를 출력합니다.
-        public static void PrintF(Log type, string format, params Object[] args)
+    // 로그를 출력합니다.
+    public static void PrintF(Log type, string format, params Object[] args)
         {
             string message = String.Format(format, args);
             

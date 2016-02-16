@@ -7,6 +7,7 @@ using System.Text;
 using OpenApi;
 using AxKHOpenAPILib;
 using KiwoomCode;
+using System.Threading;
 
 namespace WcfServiceLibrary
 {
@@ -18,9 +19,9 @@ namespace WcfServiceLibrary
 
         public KiwoomOpenApiService(){
             axKHOpenAPI = class2.getAxKHOpenAPIInstance();
-
+            //from 에서 등록하기 때문에 굳이 이렇게 등록안해도 됨..
             //Tran 수신시 이벤트
-            this.axKHOpenAPI.OnReceiveTrData += new AxKHOpenAPILib._DKHOpenAPIEvents_OnReceiveTrDataEventHandler(this.axKHOpenAPI_OnReceiveTrData);
+            ///this.axKHOpenAPI.OnReceiveTrData += new AxKHOpenAPILib._DKHOpenAPIEvents_OnReceiveTrDataEventHandler(this.axKHOpenAPI_OnReceiveTrData);
             //실시간 시세 이벤트
             this.axKHOpenAPI.OnReceiveRealData += new AxKHOpenAPILib._DKHOpenAPIEvents_OnReceiveRealDataEventHandler(this.axKHOpenAPI_OnReceiveRealData);
             //수신 메시지 이벤트
@@ -986,6 +987,200 @@ namespace WcfServiceLibrary
         #endregion
 
 
+        /// <summary>
+        ///[101] 설명 주식 일일 데이터를 주식이 생성된 일부터 받아온다.
+        ///입력값
+        ///strCode : 종목코드
+        ///stockDate: YYYYMMDD  문자열 ex)20160122
+        ////반환값  
+        /// 성공유무 데이터는 onReceived쪽에서 soap로 쏴줌
+        /// </summary>
+        /// 
+        /// spell  은 내가 만든 속성  api가 너무 과거거 까지 다가져오므로
+        /// START_STOCK_DATE   로 넘어오면 START_STOCK_DATE 부터 stockDate 까지 가져오기 형식은 'YYYYMMDD' 
+        /// ZERO 으로 나오면 한번 받아올수있는 제한까지만 받아오기.
+        /// TWO로 넘어오면 처음 부터 지정한 stockDate까지 nPreNext를 받는쪽에서 2로 지정해서 다받아올수있게 하기.
+        public String GetOpt10081(String strCode, String startDate,String endDate)
+        {
+            //String stockDate = DateTime.Today.ToString("yyyyMMdd");
+            //음 nPreNext 를 처음 할때는 0으로 놓고 했는데..
+            // 그럼 과거 몇개랑 현재까지 보이고..
+            // 받아온것을 nPreNext 2로 하면 이어서 받아오게 되는데..
+            // qna 게시판 일어보니 1로 넣으면 그날만 가져온다는 것 같다.
+            //해보자.
+            /*
+                1. 고객님께서 작성하신 로직상 CommRqData가 전송횟수제한 오류 발생없이 모두 전송되고 있다면 무리가 없습니다. 
+                2. 2값은 조회하신 기준으로 그 이전의 값을 의미하고, 1값은 조회하신 기준으로 그 이후 연속데이터를 의미합니다. 1 값은 현재 시점 기준이 아닌 특정 일자를 입력하여 조회하는 성격의 TR서비스에서 사용됩니다. 
+            */
+            //그런데 1로 해도 0이랑했을때랑 차이가 없다. ㅠㅠ
+            //결국엔 당일것만 가져오고 싶으면 내가 적절히 짤라 줘야한다..
+            //그러기 위해서  명령어를 담아두었다가 receive가 되었을때 비교 해서 적절하게 짤라줄 명령어를 담는 저장공간이  필요하겠다.
+            //HashTable이 괜찮겠네...
+            //전역으로 읽을 수 있어야 하니까 공간은 Class1
+            //내가 마음대로 조절할수있는것은.  sRQName, sScreenNo 두개네...
+            /*
+            이런 난 수정주가 구분이 1로 고정인지 알았는데 qna를 보니 그게 아닌것 같다..
+            
+            문의 내용중이런것이 있다));;
+                OPT10081 에서 
+                수정주가구분 = 0 or 1 
+                이것을 변경해도 동일한 값이 나옵니다. 
+
+                테스트 조건 
+                SetInputValue("종목코드" , "002990"); 
+                SetInputValue("기준일자" , "20121228"); 
+                SetInputValue("수정주가구분" , "0"); 
+
+                SetInputValue("종목코드" , "002990"); 
+                SetInputValue("기준일자" , "20121228"); 
+                SetInputValue("수정주가구분" , "1"); 
+
+                두개 모두 2012년 12월 28일 현재가가 1555원 표시됩니다. 
+
+                해당 종목은 감자가 있었기 때문에 
+                차트에서 
+                수정주가 적용시 : 10892원 
+                수정주가 미적용시 : 1555원 
+                이렇게 표시됩니다. 
+
+            기타 다른 답변으로는 
+            차트조회시 수정주가 구분값(0:권리락 적용안됨.1:권리락 적용됨)을 넣어서 조회하시면 됩니다. 
+            권리락이라는게 뭘까??
+
+                권리락 중 "권리" 에 의미는 유상증장 및 무상증자와 배당에 참여할 수 있는 자격 또는 권리를 의미하며,
+                곧 주식 권리락이란 위에 해당하는 권리를 받을 수 있는 자격이 없어진다는 이야기입니다.
+                다시 말하면  증자를 통하여 얻게 되는 이익에 비례하여 주가를 떨어뜨립니다.
+
+ 
+                유상증자에서의 권리락
+                말그대로 기존 주주들에게 유상으로(돈을 지불하여) 현 시점의 주가보다 저렴하게 주식을 살 수 있게 권리를 주게 되며,
+                이 때문에 생기는 시세차이로 인하여 권리락이 발생하게 됩니다.
+                무상증자
+                주주들이 지불 없이 더 많은 주식을 받게 됩니다. 회사 입장에서는 주주들에게 지불받는 금액이 없으나 주식수는 늘어나게 됩니다.
+                무상증자가 일어나면 주주는 더 많은 주식을 갖게 되지만 주가는 그에 비례하여 하락을 하게 되기 때문에
+                결론적으로는 값이 동일해집니다.
+                하지만, 대부분 무상증자 시 주가는 기존 값으로 회귀를 하는 경우가 많고, 시장에서 호재로 여겨지는 부분임.
+            그냥 1로 표시하자... 골치 아프다..
+            */
+
+            /*
+            큐를 받아두었다가 처리하는건.. 약간 위험한듯..
+            그것보다 여기에서 지연이 생길수있도록 하는게 맞는것같다.
+            시스템 성능 만큼 여기서 지연이 일어나야한다..
+            이미  HashTable를 사용해서 여기 넣은 명령어가 received이벤트가 발생할 때 읽을 수있도록 했다..
+            그리고 그걸 큐에 담아서 soap으로 전송할때 사용했었다..
+            큐하고 hashtable 두개를 쓰던걸 hashtable 하나로 바꾸고
+            실제로 soap 요청이 완료되면 hashtable에서 그 키값을 바꾸도록 해야겠다.
+            그런데 soap 전송에서 key값을 어떻게 알수 있을까???
+            음 hashtable에 순서가 있어서 처음들어온것을 빠질수있게 하면 되겠다..
+            그런데 hashtable에는 순서가 없네...
+            큐에 Dinary를 담자..
+            ㅋㅋ 그러면 되겠다...
+            아 dictionary를 담으려고 보니까.. 너무 낭비인것 같다.
+            클래스를 하나만들자..
+            아 생각해보니까. 하나 만들어둔게 있었다..
+            ReceiveTrData.class
+            아 젠장 큐가 recevie에서 만드니까.. 여기 서 막을 방법이 없네..
+            여기서 막으면 행이 걸리는데.. 행이걸리는게 맞긴 한것 같은데..
+            행이 오래걸리면 타임아웃이 걸리텐데...
+            그럼 다시 원점인데.. 여기다 가 큐를 만들어야하는데..
+
+
+            여기 쓰레드 큐가 하나 있어야 하고 
+            그 쓰레드는 이벤트에 큐가 쌓였을때 
+            하나씩 실행되어야 해.. 그래야 맞는것 같아..
+            하나는 신문을 넣고 하나는 출판을 하는 그 걸 써야 하는게 맞는것 같은데..
+            https://msdn.microsoft.com/ko-kr/library/yy12yx1f%28v=vs.90%29.aspx
+
+            오호 이게 맞는것 같은데..
+            http://www.csharpstudy.com//Threads/autoresetevent.aspx
+            이아저씨는 천제인가..
+            그런데 이건 한번 다 돌고 그다음 다른거 돌고 그런식이네...
+            이렇게 구현하면 명령어가 행이 걸릴수도 있겠는데..
+            한쪽에서 계속 받아서 쌓이면... 
+            그리고 나중에 실행되고 그런식 아닐까...
+
+            음 입력이 불특정으로 일어나니까 쌓이는것도 불특정으로 쌓여서 흐름이 되겠다.
+            나쁘지 않다...
+            쓰레드 돌리는걸 생각해보았는데.. 생각보다 위험하다..
+            kiwoom api가 객체를 여러개 생성하는게 아니라 하나로 쓰는거랑
+            변수가 바뀌지 않을꺼라는 보장이 없다..
+
+            델레케이트 풀이 가능 할까???
+
+
+
+
+            이게 맞는것 같은데 이해를 못하고 있으니...
+            음 이건 큐가 하나네.. 그런데 내꺼는 큐하나로 못하는데..
+            쓰레드 큐가 있어야 하네...
+            큐를 넣으면 반환값이 없어지네.. 큐하면 안되겠다 앞에 링크중 
+            앞에 그냥 1초 걸자.. 아 일이 진행이 안되네...
+
+            그래서 멈추는걸 로 해서 아래처럼 했느데.. 쓸데없이 뒤에서 보내고 다시 조회하고 그러는데 시간이 딜레이가 걸린다...
+            큐에서 3개정도 있고 recevie가 동작을 했으면 좋겠다... 
+            그렇게 하려면 
+            큐 크기를 조사해서 3보다 작으면 웨이트가 걸리고 3보다 크면 웹이트가 풀리고.. OK??
+
+            */
+            //Class1.getClass1Instance().waitOneOpt10081();// 멈추기..
+            
+            String sScreenNo = Class1.getClass1Instance().GetScrNum();
+            String sRQName = "주식일봉차트조회";
+            String sTrCode = "OPT10081";
+            int nPrevNext = 0;
+
+            String keyStockCodeLayout = "sRQName:{0}|sTrCode:{1}|sScreenNo:{2}";
+            String keyStockCode = String.Format(keyStockCodeLayout
+                , sRQName
+                , sTrCode
+                , sScreenNo
+            );
+
+            String keyLayout = "sRQName:{0}|sTrCode:{1}|sScreenNo:{2}|stockCode:{3}";
+            String key = String.Format(keyLayout
+                , sRQName
+                , sTrCode
+                , sScreenNo
+                , strCode
+            );
+            FileLog.PrintF("keyStockCode  ==" + keyStockCode);
+            FileLog.PrintF("key  ==" + key);
+
+            OpenApi.Spell.spellOpt spellOpt10081 = new OpenApi.Spell.spellOpt();
+            spellOpt10081.sRQNAME = sRQName;
+            spellOpt10081.sTrCode = sTrCode;
+            spellOpt10081.stockCode = strCode;
+            spellOpt10081.startDate = startDate;
+            spellOpt10081.endDate = endDate;
+            spellOpt10081.nPrevNext = nPrevNext;
+            spellOpt10081.sScreenNo = sScreenNo;
+
+
+            //음 받는쪽에서 일자하고 nPrevNext를 알수가 없어서..키로 쓸수가 없다...
+            //종목코드로도 찾을 수가 없네 종목코드도 지우자.
+            //spell=""
+            Class1.getClass1Instance().AddStockCodeDictionary(keyStockCode, strCode);
+            Class1.getClass1Instance().AddSpellDictionary(key, spellOpt10081);
+
+
+            axKHOpenAPI.SetInputValue("종목코드", strCode);
+            axKHOpenAPI.SetInputValue("기준일자", endDate);
+            axKHOpenAPI.SetInputValue("수정주가구분", "1");
+            int nRet = axKHOpenAPI.CommRqData(sRQName, sTrCode, nPrevNext, sScreenNo);
+
+            if (Error.IsError(nRet))
+            {
+                return "[OPT10081][OK]:" + Error.GetErrorMessage();
+            }
+            else
+            {
+                return "[OPT10081][NOK]:" + Error.GetErrorMessage();
+            }
+      }
+
+
+
 
         #region 이벤트
         /// <summary>
@@ -1007,6 +1202,8 @@ namespace WcfServiceLibrary
         ///sRQName – CommRqData의 sRQName과 매핑되는 이름이다.
         ///sTrCode – CommRqData의 sTrCode과 매핑되는 이름이다.
         /// </summary>
+        /// 
+       /*
         private void axKHOpenAPI_OnReceiveTrData(object sender, AxKHOpenAPILib._DKHOpenAPIEvents_OnReceiveTrDataEvent e)
         {
             ///sScrNo – 화면번호
@@ -1018,7 +1215,7 @@ namespace WcfServiceLibrary
             ///sTrCode – CommRqData의 sTrCode과 매핑되는 이름이다.
             ///            
         }
-
+        */
 
         /// <summary>
         ///실시간 시세 이벤트
