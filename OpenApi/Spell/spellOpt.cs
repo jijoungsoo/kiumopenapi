@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace OpenApi.Spell
 {
-    public class spellOpt
+    public class SpellOpt
     {
-        private static string path = System.Reflection.Assembly.GetExecutingAssembly().Location;
+        private static string path = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
         public String key;
         public String value;
         public String sRQNAME;
@@ -18,36 +18,69 @@ namespace OpenApi.Spell
         public String endDate;          /*일자 = YYYYMMDD(20160101 연도4자리, 월 2자리, 일 2자리 형식)*/
         public String sScreenNo;
         public int nPrevNext;
-        public String modifyGubun = "1";
         public String priceOrAmount;    /*금액수량구분 = 1:금액, 2:수량*/
         public String buyOrSell;       /*매매구분 = 0:순매수, 1:매수, 2:매도*/
-        public String priceGubun = "1";/*단위구분 = 1000:천주, 1:단주*/
         public String lastStockDate;
+        public String reportGubun;  /*FILE ==>파일로 남기기 SOAP==>SOAP전송*/
+        public String tick; /*틱범위 = 1:1분, 3:3분, 5:5분, 10:10분, 15:15분, 30:30분, 45:45분, 60:60분*/
+        public DateTime startRunTime ;
+        public String accountNum;//계좌번호
+        public String password; //계좌비밀번호
+        public String orderGubun; //매매구분 => 0:전체, 1:매도, 2:매수
+        public String orderStatus; //체결구분 =>  0:전체, 1:미체결
 
-
-
-
-
-        public spellOpt ShallowCopy() 
+        public SpellOpt ShallowCopy() 
         {
-            return (spellOpt)this.MemberwiseClone();
+            return (SpellOpt)this.MemberwiseClone();
         }
 
         public String GetFileName()
         {
-            path = System.IO.Path.GetDirectoryName(path);
+            String tmpPath = "";
+            if (this.sTrCode.Equals("OPT10059")) {
+                tmpPath = path + "\\" + this.sTrCode + "_" + this.stockCode + "_"+this.priceOrAmount + "_"+this.buyOrSell + ".txt";
+            } else {
+                tmpPath = path + "\\" + this.sTrCode + "_" + this.stockCode + ".txt";
+            }
+            return tmpPath;
+        }
+
+        public String GetCheckZipFileName()
+        {
+            String tmpPath = "";
             if (this.sTrCode.Equals("OPT10059"))
             {
-                path = path + "\\" + this.sTrCode + "_" + this.stockCode + "_"+this.buyOrSell+"_"+this.priceOrAmount+".txt";
-            } else { 
-                path = path + "\\" + this.sTrCode + "_" + this.stockCode + ".txt";
+                tmpPath = path + "\\" + this.sTrCode + "_" + this.priceOrAmount + "_" + this.buyOrSell + ".dat";
             }
-            return path;
+            else {
+                tmpPath = path + "\\" + this.sTrCode + ".dat";
+            }
+            //FileLog.PrintF("GetCheckZipFileName() =" + tmpPath);
+            return tmpPath;
+        }
+
+        public String GetZipFileName()
+        {
+            String tmpPath = "";
+            if (this.sTrCode.Equals("OPT10059"))
+            {
+                tmpPath = path + "\\" + this.sTrCode + "_"+ endDate + "_" + this.priceOrAmount + "_" + this.buyOrSell + ".zip";
+            }
+            else {
+                tmpPath = path + "\\" + this.sTrCode + "_" + endDate + ".zip";
+            }
+            return tmpPath;
         }
 
         public Boolean isNext()
         {
-            if (this.nPrevNext > 0 && this.startDate.Equals("TWO"))
+            if (this.sTrCode.Equals("OPT10001"))
+            {
+                FileLog.PrintF("isNext() nPrevNext=" + nPrevNext);
+                return false;
+            }
+
+                if (this.nPrevNext > 0 && this.startDate.Equals("TWO"))
             {
                 return true;
             }
@@ -59,17 +92,34 @@ namespace OpenApi.Spell
                 } else 
                 {
                     if(this.nPrevNext>0) { 
-                        int startDate일자 = 0;
-                        int lastStockDate일자 = 0;
-                    
-                        if (!int.TryParse(this.startDate,out startDate일자)){
+                        long startDate일자 = 0;
+                        long lastStockDate일자 = 0;
+
+                        String tmpStartDate = "";
+                        if (this.startDate.Length == 8) { 
+                            tmpStartDate= this.startDate + "000000";//시분초를 더함
+                        } else
+                        {
+                            tmpStartDate = this.startDate;
+                        }
+                        String tmpLastStockDate = "";
+                        if (this.lastStockDate.Length == 8)
+                        {
+                            tmpLastStockDate = this.lastStockDate + "000000";//시분초를 더함
+                        } else
+                        {
+                            tmpLastStockDate = this.lastStockDate;
+                        }
+                        if (!long.TryParse(tmpStartDate, out startDate일자))
+                        {
                             startDate일자 = 0;
                         }
-                        if (!int.TryParse(this.lastStockDate, out lastStockDate일자))
+                          
+                        if (!long.TryParse(tmpLastStockDate, out lastStockDate일자))
                         {
                             lastStockDate일자 = 0;
                         }
-                        FileLog.PrintF("isNext() startDate일자=" + startDate일자.ToString() + ",lastStockDate일자=" + lastStockDate일자.ToString());
+                        //FileLog.PrintF("isNext() startDate일자=" + startDate일자.ToString() + ",lastStockDate일자=" + lastStockDate일자.ToString());
                         if (startDate일자 < lastStockDate일자)
                         {
                             return true;

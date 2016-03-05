@@ -9,103 +9,126 @@ using System.Net;
 using System.IO;
 using MySql.Data.MySqlClient;
 using System.Collections.Concurrent;
+using OpenApi.ReceiveTrData;
+using System.IO.Compression;
 
 namespace OpenApi
 {
 
     public class Class1
     {
-        private static Boolean _multiThread = false;
+        private static Boolean _multiThread = true;
         private int _scrNum = 5000;
+        private int _scrNumAnyTime = 1000;
         private List<String> stockCodeList;
-        readonly object locker = new object();
+
         readonly object lockerSpellDictionary = new object();
         readonly object lockerStockDictionary = new object();
         readonly object lockerRunQueue = new object();
         readonly object lockerReceivedQueue = new object();
+        readonly object lockerOrderedCodeCount = new object();
+        readonly object lockerRanUniqStockCount = new object();
+        readonly object lockerCurrentRunSpellOpt = new object();
 
+        readonly object jijs = new object();
         
         readonly object lockerOrderQueue = new object();
-        private Queue<String> kiwoomQueue = new Queue<String>();
-        private ConcurrentQueue<OpenApi.Spell.spellOpt> receivedQueue = new ConcurrentQueue<OpenApi.Spell.spellOpt>();
-        private ConcurrentQueue<OpenApi.Spell.spellOpt> orderQueue = new ConcurrentQueue<OpenApi.Spell.spellOpt>();
-        private ConcurrentQueue<OpenApi.Spell.spellOpt> runQueue = new ConcurrentQueue<OpenApi.Spell.spellOpt>();
-        private Dictionary<String, OpenApi.Spell.spellOpt> spellDictionary = new Dictionary<String, OpenApi.Spell.spellOpt>();
+        private ConcurrentQueue<OpenApi.Spell.SpellOpt> receivedQueue = new ConcurrentQueue<OpenApi.Spell.SpellOpt>();
+        private ConcurrentQueue<OpenApi.Spell.SpellOpt> orderQueue = new ConcurrentQueue<OpenApi.Spell.SpellOpt>();
+        private ConcurrentQueue<OpenApi.Spell.SpellOpt> runQueue = new ConcurrentQueue<OpenApi.Spell.SpellOpt>();
+        private Dictionary<String, OpenApi.Spell.SpellOpt> spellDictionary = new Dictionary<String, OpenApi.Spell.SpellOpt>();
         private Dictionary<String, String> stockCodeDictionary = new Dictionary<String, String>();
-        private HashSet<String> stockCodeCount= new HashSet<String>();
-        private HashSet<String> orderedCodeCount = new HashSet<String>();
+        private int orderedCodeCount = 0;
+        private int ranUniqStockCount = 0;
+        private OpenApi.Spell.SpellOpt CurrentRunSpellOpt=null;
+        
 
 
-        //string ftpPath = "ftp://192.168.0.30/rubytest/mysqloader/data";
-        string ftpPath = "ftp://192.168.0.30/home/jijs/rubytest/mysqloader/data";
         string ftpUser =   "jijs";
         string ftpPwd = Environment.GetEnvironmentVariable("FTP_PASSWORD");
-        string connStr = "Server=192.168.0.30;Database=stockWeb_production;Uid=root;Pwd="+ Environment.GetEnvironmentVariable("FTP_PASSWORD") + ";CHARSET=utf8";
+        public static string connStr = "Server=192.168.0.30;Database=stockWeb_development;Uid=root;Pwd="+ Environment.GetEnvironmentVariable("FTP_PASSWORD") + ";CHARSET=utf8";
+
+        public int iEOS = 0;
+        public string endDateEos = DateTime.Now.ToString("yyyyMMdd");
+
+        private static string path = System.Reflection.Assembly.GetExecutingAssembly().Location;
 
 
         //opt10081s 입력을 받고 완료가 되때까지 기다리게 할목적의 거시기 ResetEvent();
         private AutoResetEvent _evtOpt10081 = new AutoResetEvent(true);
 
+        public void ClosedAll()
+        {
+            FileLog.PrintF("End");
+            t1.Abort();
+            t2.Abort();
+            t3.Abort();
+            t4.Abort();
+            t5.Abort();
+            axKHOpenAPI.Dispose();
+            //axKHOpenAPI.CommTerminate();
+        }
         
+        Thread t1;
+        Thread t2;
+        Thread t3;
+        Thread t4;
+        Thread t5;
+
+        public void Start()
+        {
+            FileLog.PrintF("Start");
+            stockCodeList = setStockCodeList();
+
+        }
+
         private Class1()
         {
-
-            stockCodeList = setStockCodeList();
-            Thread t1 = new Thread(new ThreadStart(sendMessageReceived));
-            Thread t2 = new Thread(new ThreadStart(orderReceivedMessage));
+            path = System.IO.Path.GetDirectoryName(path) + "\\";
+            t1 = new Thread(new ThreadStart(sendMessageReceived));
+            t2 = new Thread(new ThreadStart(orderReceivedMessage));
+            t3 = new Thread(new ThreadStart(EOS_CompressZip));
+            t4 = new Thread(new ThreadStart(UploadEosFiles));
+            t5 = new Thread(new ThreadStart(CheckTimeCurrentRunSellOpt));
             t1.Start();
             t2.Start();
-
+            t3.Start();
+            t4.Start();
+            t5.Start();
         }
-        public void waitOneOpt10081()
+        public void waitOneOpt10081(String sTrCode)
         {
-             //   FileLog.PrintF("waitOneOpt10081 [runQueue.Count] 1=" + runQueue.Count);
-                //     FileLog.PrintF("waitOneOpt10081 [spellDictionary.Count]=" + spellDictionary.Count);
-              //  if (runQueue.Count > 1)
-              //  {  //2~7개일때 동일하게 1분에 134개정도 1개로 할때 56개 
-              //더확인해보니 내가 슬립을 1초 주어서 56개가 나온것이고 슬립을 0.2초 주었더니 155개로 오히려 늘어남
-              //오히려 슬립을 주지 않았더니  124개로 줄었다... 02초로 주는게 더빠름.
-                    _evtOpt10081.WaitOne();
-               //}
-               // FileLog.PrintF("waitOneOpt10081 [runQueue.Count] 2=" + runQueue.Count);
-
-                
+             FileLog.PrintF("waitOneOpt10081 sTrCode=>"+ sTrCode);
+             _evtOpt10081.WaitOne();
         }
-        public void setOpt10081()
+        public void setOpt10081(String sTrCode)
         {
-           //     FileLog.PrintF("setOpt10081 [runQueue.Count] 1=" + runQueue.Count);
-
-          //      if (runQueue.Count <= 1)//3보다 작거나 같을때 풀어준다.
-          //      {
-                    _evtOpt10081.Set();
-           //     }
-          //      FileLog.PrintF("setOpt10081 [runQueue.Count] 2=" + runQueue.Count);
-           
+            FileLog.PrintF("setOpt10081 sTrCode=>" + sTrCode);
+            _evtOpt10081.Set();
         }
 
 
 
-        public OpenApi.Spell.spellOpt DequeueByRunQueue()
+        public OpenApi.Spell.SpellOpt DequeueByRunQueue()
         {
-            OpenApi.Spell.spellOpt tmp;
+            OpenApi.Spell.SpellOpt tmp;
             if(!runQueue.TryDequeue(out tmp)){
                 tmp = null;
             }
             return tmp;
         }
-
-
-        public void EnqueueByRunQueue(OpenApi.Spell.spellOpt message)
+        
+        public void EnqueueByRunQueue(OpenApi.Spell.SpellOpt message)
         {
                 runQueue.Enqueue(message);
         }
 
 
-        public OpenApi.Spell.spellOpt DequeueByReceivedQueue()
+        public OpenApi.Spell.SpellOpt DequeueByReceivedQueue()
         {
             //lock (lockerReceivedQueue)
             //{
-            OpenApi.Spell.spellOpt tmp;
+            OpenApi.Spell.SpellOpt tmp;
             if (!receivedQueue.TryDequeue(out tmp))
             {
                 tmp = null; 
@@ -115,7 +138,7 @@ namespace OpenApi
         }
 
 
-        public void EnqueueByReceivedQueue(OpenApi.Spell.spellOpt message)
+        public void EnqueueByReceivedQueue(OpenApi.Spell.SpellOpt message)
         {
            // lock (lockerReceivedQueue)
            // {
@@ -126,7 +149,7 @@ namespace OpenApi
 
 
 
-        public  void EnqueueByOrderQueue(OpenApi.Spell.spellOpt message)
+        public  void EnqueueByOrderQueue(OpenApi.Spell.SpellOpt message)
         {
             lock (lockerOrderQueue)
             {
@@ -134,25 +157,61 @@ namespace OpenApi
             }
         }
     
-        public void AddSpellDictionary(String key,  OpenApi.Spell.spellOpt value)
+        public void AddSpellDictionary(String key,  OpenApi.Spell.SpellOpt value)
         {
             lock (lockerSpellDictionary)
             {
-                if (!spellDictionary.ContainsKey(key)) { 
+                FileLog.PrintF("AddSpellDictionary key=>" + key);
+                if (!spellDictionary.ContainsKey(key)) {
                     spellDictionary.Add(key, value);
                 }
             }
         }
 
-        public  OpenApi.Spell.spellOpt getSpell(String key)
+        public  OpenApi.Spell.SpellOpt getSpell(String key)
         {
             //'System.Collections.Generic.KeyNotFoundException'
             lock(lockerSpellDictionary) {
-                OpenApi.Spell.spellOpt tmp = spellDictionary[key];
+                FileLog.PrintF("getSpell key=>" + key);
+                OpenApi.Spell.SpellOpt tmp = spellDictionary[key];
                 //spellDictionary.Remove(key);
                 return tmp;
             }
         }
+
+        public void InRanUniqStockCount()
+        {
+            lock (lockerRanUniqStockCount)
+            {
+                this.ranUniqStockCount = this.ranUniqStockCount + 1;
+            }
+        }
+
+        public int GetRanUniqStockCount()
+        {
+            lock (lockerRanUniqStockCount)
+            {
+                return ranUniqStockCount;
+            }
+        }
+
+
+        public void InCraeteOrderedCodeCount()
+        {
+            lock (lockerOrderedCodeCount)
+            {
+                this.orderedCodeCount = this.orderedCodeCount + 1;
+            }
+        }
+
+        public int GetCntOrderedCodeCount()
+        {
+            lock (lockerOrderedCodeCount)
+            {
+                return orderedCodeCount;
+            }
+        }
+
 
         public void AddStockCodeDictionary(String key, String value)
         {
@@ -161,7 +220,7 @@ namespace OpenApi
                 
                 if(!stockCodeDictionary.ContainsKey(key))
                 {
-                    //FileLog.PrintF("AddStockCodeDictionary[" + key + "]  ==" + value);
+                    FileLog.PrintF("AddStockCodeDictionary  key:" + key);
                     stockCodeDictionary.Add(key, value);
                 }
                 
@@ -172,7 +231,6 @@ namespace OpenApi
         {
             lock (lockerStockDictionary)
             {
-                FileLog.PrintF("removeStockCodeDictionary[" + key + "]");
                 stockCodeDictionary.Remove(key);
             }
         }
@@ -180,9 +238,8 @@ namespace OpenApi
 
         public void removeSpellDictionary(String key)
         {
-            lock (locker)
+            lock (lockerSpellDictionary)
             {
-                FileLog.PrintF("removeSpellDictionary[" + key + "]");
                 spellDictionary.Remove(key);
             }
         }
@@ -195,7 +252,7 @@ namespace OpenApi
             // 뭔가 에러창이 뜨는것이 있는데.. 그게 뜨면 다시 읽기를 시도하는것같다 kiwoom ocx가.
             // 가져가면서 지우는것은 하면 안되겠다..
             lock(lockerStockDictionary) {
-                //FileLog.PrintF("getStockCode  get key:" + key);
+                FileLog.PrintF("getStockCode  get key:" + key);
                 String tmp = stockCodeDictionary[key];
                 //stockCodeDictionary.Remove(key);
             return tmp;
@@ -206,217 +263,481 @@ namespace OpenApi
         {
             while (true)
             {
-                OpenApi.Spell.spellOpt tmp;
+                OpenApi.Spell.SpellOpt tmp;
                 while (orderQueue.TryDequeue(out tmp)){
-                    waitOneOpt10081();// 멈추기..
-                    //파일이 있는건 통과.
-                    if (tmp.sTrCode.Equals("OPT10081"))
-                    {
-                        axKHOpenAPI.SetInputValue("종목코드", tmp.stockCode);
-                        axKHOpenAPI.SetInputValue("기준일자", tmp.endDate);
-                        axKHOpenAPI.SetInputValue("수정주가구분", tmp.modifyGubun);
-                    }
-                    else if (tmp.sTrCode.Equals("OPT10059"))
-                    {
-                        axKHOpenAPI.SetInputValue("일자", tmp.endDate);
-                        axKHOpenAPI.SetInputValue("종목코드", tmp.stockCode);
-                        axKHOpenAPI.SetInputValue("금액수량구분", tmp.priceOrAmount);
-                        axKHOpenAPI.SetInputValue("매매구분", tmp.buyOrSell);
-                        axKHOpenAPI.SetInputValue("단위구분", tmp.priceGubun);
-                    }
-                    int nRet = axKHOpenAPI.CommRqData(tmp.sRQNAME, tmp.sTrCode, tmp.nPrevNext, tmp.sScreenNo);
+                        FileLog.PrintF("orderReceivedMessage");
 
-                    FileLog.PrintF("orderReceivedMessage endDate" + tmp.endDate);
-                    FileLog.PrintF("orderReceivedMessage stockCode" + tmp.stockCode);
-                    FileLog.PrintF("orderReceivedMessage buyOrSell" + tmp.buyOrSell);
-                    FileLog.PrintF("orderReceivedMessage priceGubun" + tmp.priceGubun);
-                    FileLog.PrintF("orderReceivedMessage sRQNAME" + tmp.sRQNAME);
-                    FileLog.PrintF("orderReceivedMessage sTrCode" + tmp.sTrCode);
-                    FileLog.PrintF("orderReceivedMessage nPrevNext" + tmp.nPrevNext);
-                    FileLog.PrintF("orderReceivedMessage sScreenNo" + tmp.sScreenNo);
-                    /*여기부터 없네..*/
-                    this.EnqueueByRunQueue(tmp);//실행중인 데이터크기를 대충알기위해서
-                    orderedCodeCount.Add(tmp.stockCode);
+                        waitOneOpt10081(tmp.sTrCode);// 멈추기..    //그런데 이거 없으면 에러남 0.2초 딜레이에서 유지해야할듯.
+                        lock(jijs) { 
+                            String path = tmp.GetFileName();
+                            ReceiveTrDataFactory rtf = ReceiveTrDataFactory.getClass1Instance();
+                            ReceiveTrData.ReceiveTrData rt = rtf.getReceiveTrData(tmp.sTrCode);
+                            int nRet = rt.Run(axKHOpenAPI, tmp);
+                            tmp.startRunTime = DateTime.Now;
+                            setCurrentRunSellOpt(tmp);
+                            this.EnqueueByRunQueue(tmp);//실행중인 데이터크기를 대충알기위해서                       
+                            this.InRanUniqStockCount();
+                        }
                 }
-                Thread.Sleep(200); //0.2초에 한번씩 확인
+                Thread.Sleep(200); //0.2초에 한번씩 확인 
             }
-            
         }
-
-
+        
         private void  sendMessageReceived()
         {
             int sendCount = 0;
-            int notSendCount = 0;
-            while (true)
-            {
-                        OpenApi.Spell.spellOpt tmp;
-                        while (receivedQueue.TryDequeue(out tmp))
+            OpenApi.Spell.SpellOpt prevTmp=null;
+            while (true) {
+                OpenApi.Spell.SpellOpt tmp;
+                while (receivedQueue.TryDequeue(out tmp))
+                {
+                    FileLog.PrintF("sendMessageReceived");
+                    printRunTime(tmp);
+                    //이걸 바꿀수가 없네..
+                    String ret = tmp.value;
+                    String key = tmp.key;
+
+                    if (prevTmp != null) { 
+                               FileLog.PrintF("prevTmp.sTrCode=" + prevTmp.sTrCode + ",tmp.sTrCode=" + tmp.sTrCode);
+                    }
+
+                    
+                   if (prevTmp != null && !prevTmp.sTrCode.Equals(tmp.sTrCode))
+                   {
+                        String tmpPath = prevTmp.GetCheckZipFileName();
+                        System.IO.StreamWriter tmpFile = new System.IO.StreamWriter(tmpPath, true);
+                        tmpFile.Write(endDateEos);
+                        tmpFile.Close();
+                    } else if (prevTmp != null && prevTmp.sTrCode.Equals("OPT10059") && prevTmp.sTrCode.Equals(tmp.sTrCode) 
+                                && 
+                               ! (prevTmp.priceOrAmount + "_"+ prevTmp.buyOrSell).Equals((tmp.priceOrAmount + "_"+tmp.buyOrSell))
+                    )
+                    {
+                        String tmpPath = prevTmp.GetCheckZipFileName();
+                        System.IO.StreamWriter tmpFile = new System.IO.StreamWriter(tmpPath, true);
+                        tmpFile.Write(endDateEos);
+                        tmpFile.Close();
+                    }
+                    
+                    String path = tmp.GetFileName();
+                    System.IO.StreamWriter file = new System.IO.StreamWriter(path, true);
+                    file.Write(ret.ToString());
+                    file.Close();
+                    this.DequeueByRunQueue();
+
+                    //멈추는걸 풀기전에.. 하나가 더있어야해..
+                    //.nPrevNext 가 2로 넘어오는건 받을게 더 있다는 것이기 때문에..
+                    FileLog.PrintF("tmpSpell.isNext()=" + tmp.isNext());
+                    if (tmp.isNext() == true)
+                    {
+                        //주문을 백터에 넣는게 아니고 바로 하기 때문에..
+                        //슬립을 주자
+                        Thread.Sleep(200);
+                        lock (jijs)
                         {
+                            FileLog.PrintF("tmpSpell.nPrevNext > 0  tmp.nPrevNext=" + tmp.nPrevNext);
+                            FileLog.PrintF("tmpSpell.startDate=" + tmp.startDate);
+                            FileLog.PrintF("sendMessageReceived tmp.sTrCode =" + tmp.sTrCode);
+                            ReceiveTrDataFactory rtf = ReceiveTrDataFactory.getClass1Instance();
+                            ReceiveTrData.ReceiveTrData rt = rtf.getReceiveTrData(tmp.sTrCode);
+                            int nRet = rt.Run(axKHOpenAPI, tmp);  //연속조회시
+                            tmp.startRunTime = DateTime.Now;
+                            setCurrentRunSellOpt(tmp);
+                            this.EnqueueByRunQueue(tmp);//실행중인 데이터크기를 대충알기위해서2      
+                        }
+                    }
+                    else {
+                        lock (jijs)
+                        {
+                            FileLog.PrintF("tmpSpell.nPrevNext == 0  tmp.nPrevNext=" + tmp.nPrevNext);
+                            removeSpellDictionary(key);
+                            int position = key.LastIndexOf("|");
+                            String key1 = key.Substring(0, position);
+                            removeStockCodeDictionary(key1);
+                            sendCount++;
+                        }
+                        setOpt10081(tmp.sTrCode); // ... 3/1쯤 느림  //그런데 이거 없으면 에러남 0.2초 딜레이에서
+                    }
 
-                            String ret = tmp.value;
-                            String key = tmp.key;
-                            if (ret != null && !ret.Equals(""))
-                            {
-                                String path = tmp.GetFileName();
-                                System.IO.StreamWriter file = new System.IO.StreamWriter(path, true);
-                                file.Write(ret.ToString());
-                                file.Close();
-                                stockCodeCount.Add(tmp.stockCode);
+                    //처리하고 파일 압축을 위해
+                    prevTmp = tmp.ShallowCopy();
+                    if (sendCount == GetCntOrderedCodeCount() && iEOS == 1)
+                    {
+                        String tmpPath = tmp.GetCheckZipFileName();
+                        System.IO.StreamWriter tmpFile = new System.IO.StreamWriter(tmpPath, true);
+                        tmpFile.Write(endDateEos);
+                        tmpFile.Close();
+                        iEOS = 0;
+                    }
 
-                            }
-                            else
-                            {
-                                FileLog.PrintF("receive_" + tmp.sTrCode + "에 보낼 tmp.value가 비어있음 ");
-                                notSendCount++;
-                            }
-                            //멈추는걸 풀기전에.. 하나가 더있어야해..
-                            //.nPrevNext 가 2로 넘어오는건 받을게 더 있다는 것이기 때문에..
-                            //
-                            FileLog.PrintF("tmpSpell.isNext()=" + tmp.isNext());
-                            if (tmp.isNext() == true)
-                            {
-                                /*
-                                여러개를 많이 돌릴때 결국마지막에 nPrev 가 나중에 0으로나오길 기대하는데..
-                                이어서 호출되는게 아니라 다시 처음부터 호출된다...
-                                nPrevNext가 2로.. 이러면 안되는데..
-                                이유가 뭘까 하나만 돌리면 정상적으로 끝까지 가는걸 보면..
-                                바로 호출되어서 문제가 생기는 것 같지는 않다..
-                                오히려 하나씩 호출되면 문제가 생기지 않을 꺼 같다.
-                                일정개수 이상이 돌면 그전것이 초기화되는것 같다..
-                                하나가 지나고 하나가 다른것이 껴서 초기화 되는것이라면 문제가 커진다...
-                                확인했다.. 
-                                stock_code가 5개 밖에 되지 않는 상황에서
-                                무한 루프가 돈다. .원인은 연속적으로 호출되는 경우가 아닌경우
-                                다시 처음으로 돌아오는것 같다.. 결국
-                                이거는 다른 stock_code들이랑 같이 호출되면 안된다..
-                                그러니까 여러개를 미리 받을수 없다...
-                                하나씩만 처리하도록 수정하고 다시 받아보자..
-                                */
+                    FileLog.PrintF("sendMessageReceived [receivedQueue.Count] =" + receivedQueue.Count);
+                    FileLog.PrintF("sendMessageReceived [spellDictionary.Count]=" + spellDictionary.Count);
+                    FileLog.PrintF("sendMessageReceived [stockCodeDictionary.Count]=" + stockCodeDictionary.Count);
+                    FileLog.PrintF("sendMessageReceived [runQueue.Count]=" + runQueue.Count);
+                    FileLog.PrintF("sendMessageReceived [sendCount]=" + sendCount);
+                    FileLog.PrintF("sendMessageReceived [GetCntOrderedCodeCount]=" + this.GetCntOrderedCodeCount());
+                    FileLog.PrintF("sendMessageReceived [GetRanUniqStockCount]=" + this.GetRanUniqStockCount());
+                    FileLog.PrintF("sendMessageReceived [orderQueue.Count]=" + orderQueue.Count);
+                    FileLog.PrintF("sendMessageReceived [iEOS]=" + iEOS);
 
-                                FileLog.PrintF("tmpSpell.nPrevNext > 0  tmp.nPrevNext=" + tmp.nPrevNext);
-                                FileLog.PrintF("tmpSpell.startDate=" + tmp.startDate);
-                                FileLog.PrintF("sendMessageReceived tmp.sTrCode =" + tmp.sTrCode);
-                                if (tmp.sTrCode.Equals("OPT10081"))
-                                {
-                                    //아래걸 풀면 다 가져오는 그런건데.. 이거 풀면 너무 많아서 풀수가 없다...
-                                    axKHOpenAPI.SetInputValue("종목코드", tmp.stockCode);
-                                    axKHOpenAPI.SetInputValue("기준일자", tmp.endDate);
-                                    axKHOpenAPI.SetInputValue("수정주가구분", "1");
-                                }
-                                else if (tmp.sTrCode.Equals("OPT10059"))
-                                {
-                                    axKHOpenAPI.SetInputValue("일자", tmp.endDate);
-                                    axKHOpenAPI.SetInputValue("종목코드", tmp.stockCode);
-                                    axKHOpenAPI.SetInputValue("금액수량구분", tmp.priceOrAmount);
-                                    axKHOpenAPI.SetInputValue("매매구분", tmp.buyOrSell);
-                                    axKHOpenAPI.SetInputValue("단위구분", tmp.priceGubun);
-
-                                    FileLog.PrintF("sendMessageReceived OPT10060 [일자] =" + tmp.endDate);
-                                    FileLog.PrintF("sendMessageReceived OPT10060 [종목코드] =" + tmp.stockCode);
-                                    FileLog.PrintF("sendMessageReceived OPT10060 [금액수량구분.Count]=" + tmp.priceOrAmount);
-                                    FileLog.PrintF("sendMessageReceived OPT10060 [매매구분.Count]=" + tmp.buyOrSell);
-                                    FileLog.PrintF("sendMessageReceived OPT10060 [단위구분]=" + tmp.priceGubun);
-                                }
-                                axKHOpenAPI.CommRqData(tmp.sRQNAME, tmp.sTrCode, tmp.nPrevNext, tmp.sScreenNo); // 연속조회시 
-                            }
-                            else
-                            {
-                                FileLog.PrintF("tmpSpell.nPrevNext == 0  tmp.nPrevNext=" + tmp.nPrevNext);
-                                removeSpellDictionary(key);
-                                int position = key.LastIndexOf("|");
-                                String key1 = key.Substring(0, position);
-                                removeStockCodeDictionary(key1);
-                                FileLog.PrintF("sendMessageReceived [runQueue.Count] 11=" + runQueue.Count);
-                                this.DequeueByRunQueue(); //실행중인 데이터크기를 대충알기위해서
-                                                            /*자여기에  오면 파일작성이 완료된것이므로 ftp 를 열어서 파일을 전송하는 로직이 들어가야한다.*/
-                                setOpt10081();//Queue 에 3개 있는걸로 바꾼후로 위에서 이리로 이동
-                                sendCount++;
-
-                            }
-                            
-                            FileLog.PrintF("sendMessageReceived [queueCount] =" + receivedQueue.Count);
-                            FileLog.PrintF("sendMessageReceived [spellDictionary.Count]=" + spellDictionary.Count);
-                            FileLog.PrintF("sendMessageReceived [stockCodeDictionary.Count]=" + stockCodeDictionary.Count);
-                            FileLog.PrintF("sendMessageReceived [notSendCount]=" + notSendCount);
-                            FileLog.PrintF("sendMessageReceived [runQueue.Count]=" + runQueue.Count);
-                            
-                            FileLog.PrintF("sendMessageReceived [sendCount]=" + sendCount);
-                    FileLog.PrintF("sendMessageReceived [stockCodeCount] =" + stockCodeCount.Count);
-                    FileLog.PrintF("sendMessageReceived [orderedCodeCount]=" + orderedCodeCount.Count);
-
+                    if (sendCount == orderedCodeCount && iEOS == 1)
+                    {
+                        //  EOS_CompressZip();
+                        //  iEOS = 0;
+                    }
                 }
-                Thread.Sleep(200); //보내는것은 0.2초에서 10초에 한번 파일로 만드는것으로 바꿔보자 어떤일이 일어나는지.
-                //보내는것도 0.2초로 해야 빠르다.. 끝 더이상 이것에 대해 논쟁을 삼지말자 
-                //알게된것 적어도 같은 함수,같은 코드를 호출할때 0.2초로 간격을 주는게 빠르다.
-                //다른 함수 다중의 경우에 어떻게 되는지 파악 아직 안됨.
+                Thread.Sleep(200); //여기는 사실 지연이 없어도 되지않나요??
             }
         }
 
-        public void FtpUpload(String inputFilePath)
+        private void setCurrentRunSellOpt(OpenApi.Spell.SpellOpt value)
         {
-            FileLog.PrintF("FtpUpload inputFilePath = "+ inputFilePath);
-
-            FileLog.PrintF("FtpUpload ftpPath = " + ftpPath);
-            FileLog.PrintF("FtpUpload ftpUser = " + ftpUser);
-            FileLog.PrintF("FtpUpload ftpPwd = " + ftpPwd);
-            // 코드 단순화를 위해 하드코드함
-            // WebRequest.Create로 Http,Ftp,File Request 객체를 모두 생성할 수 있다.
-            FtpWebRequest req = (FtpWebRequest)WebRequest.Create(ftpPath);
-            // FTP 업로드한다는 것을 표시
-            req.Method = WebRequestMethods.Ftp.UploadFile;
-            // 쓰기 권한이 있는 FTP 사용자 로그인 지정
-            req.Credentials = new NetworkCredential(ftpUser, ftpPwd);
-
-            try
+            lock (lockerCurrentRunSpellOpt)
             {
-                req.GetResponse();
+                this.CurrentRunSpellOpt = value;
             }
-            catch (WebException ex)
+        }
+
+        private void CheckTimeCurrentRunSellOpt()
+        {
+            while (true)
             {
-                FileLog.PrintF("로그인이 안되어있다면 에러가 나겠지 ex.Message="+ ex.Message);
-                return;
+                lock (lockerCurrentRunSpellOpt)
+                {
+                    if (this.CurrentRunSpellOpt != null)
+                    {
+                        DateTime startRunTime = this.CurrentRunSpellOpt.startRunTime;
+                        DateTime checkRunTime = DateTime.Now;
+                        TimeSpan gap = checkRunTime - startRunTime;
+                        int iGap = gap.Seconds;
+                        String key = "[ALERT]"+this.CurrentRunSpellOpt.sTrCode + "::" + this.CurrentRunSpellOpt.stockCode + "::" + this.CurrentRunSpellOpt.endDate + "::iGap=> " + iGap;
+                        if (iGap > 30) { 
+                            FileLog.PrintF(key);
+                            OpenApi.Spell.SpellOpt tmp = this.CurrentRunSpellOpt.ShallowCopy();
+                            ReceiveTrDataFactory rtf = ReceiveTrDataFactory.getClass1Instance();
+                            ReceiveTrData.ReceiveTrData rt = rtf.getReceiveTrData(tmp.sTrCode);
+                            int nRet = rt.Run(axKHOpenAPI, tmp);  //연속조회시
+                            tmp.startRunTime = DateTime.Now;
+                            setCurrentRunSellOpt(tmp);
+                            this.DequeueByRunQueue();//안에 들어있는 걸빼고 
+                            this.EnqueueByRunQueue(tmp);//지금 생성한것을 넣음
+                            /*장애가 났다는것을 알릴수있는 어떤 함수가 필요하다고 생각함*/
+                        }
+                    } else
+                    {
+                        String key = "[ALERT2] 진행중인 데이터가 없다.";
+                        FileLog.PrintF(key);
+                    }
+                }
+                Thread.Sleep(300000); //5분에 한번씩 돔
+            }
+
+        }
+        
+        private void printRunTime(OpenApi.Spell.SpellOpt value)
+        {
+            DateTime startRunTime = value.startRunTime;
+            DateTime checkRunTime = DateTime.Now;
+            TimeSpan gap = checkRunTime - startRunTime;
+            int iGap = gap.Milliseconds;
+            String key ="[FINISH]"+ value.sTrCode + "::" + value.stockCode + "::" + value.endDate + "::iGap[Milliseconds]=> " + iGap;
+            FileLog.PrintF(key);
+        }
+
+        public void EOS_CompressZip()
+        {
+            while(true) {
+                FileLog.PrintF("EOS_CompressZip");
+                //1. 주식일봉차트조회
+                string zipPath = path + "OPT10081_" + endDateEos + ".zip";
+                string zipCheckPath = path + "OPT10081.dat";
+                string ftpCheckPath = path + "OPT10081_FTP.dat";
+                if (File.Exists(zipPath)==false)
+                {
+                    if (File.Exists(zipCheckPath))
+                    {
+                        FileLog.PrintF("EOS_CompressZip OPT10081 zipPath=" + zipPath);
+                        FileLog.PrintF("EOS_CompressZip OPT10081 zipCheckPath=" + zipCheckPath);
+                        CompressZip(zipPath, "OPT10081_", "");
+                        DeleteFile(zipPath, "OPT10081_", "");
+                        File.Move(zipCheckPath,ftpCheckPath);
+                    }
+                }
+                //2. 일별거래상세요청
+                zipPath = path + "OPT10015_" + endDateEos + ".zip";
+                zipCheckPath = path + "OPT10015.dat";
+                ftpCheckPath = path + "OPT10015_FTP.dat";
+                if (File.Exists(zipPath) == false)
+                {
+                    if (File.Exists(zipCheckPath))
+                    {
+                        FileLog.PrintF("EOS_CompressZip OPT10015 zipPath=" + zipPath);
+                        FileLog.PrintF("EOS_CompressZip OPT10015 zipCheckPath=" + zipCheckPath);
+                        CompressZip(zipPath, "OPT10015_", "");
+                        DeleteFile(zipPath, "OPT10015_", "");
+                        File.Move(zipCheckPath, ftpCheckPath);
+                    }
+                }
+                //3. 종목별투자자기관별차트
+                zipPath = path + "OPT10059_" + endDateEos + "_1_1.zip";
+                zipCheckPath = path + "OPT10059_1_1.dat";
+                ftpCheckPath = path + "OPT10059_1_1_FTP.dat";
+                if (File.Exists(zipPath) == false)
+                {
+                    if (File.Exists(zipCheckPath))
+                    {
+                        FileLog.PrintF("EOS_CompressZip OPT10059_1_1 zipPath=" + zipPath);
+                        FileLog.PrintF("EOS_CompressZip OPT10059_1_1 zipCheckPath=" + zipCheckPath);
+                        CompressZip(zipPath, "OPT10059_", "_1_1");
+                        DeleteFile(zipPath, "OPT10059_", "_1_1");
+                        File.Move(zipCheckPath, ftpCheckPath);
+                    }
+                }
+                zipPath = path + "OPT10059_" + endDateEos + "_1_2.zip";
+                zipCheckPath = path + "OPT10059_1_2.dat";
+                ftpCheckPath = path + "OPT10059_1_2_FTP.dat";
+                if (File.Exists(zipPath) == false)
+                {
+                    if (File.Exists(zipCheckPath))
+                    {
+                        FileLog.PrintF("EOS_CompressZip OPT10059_1_2 zipPath=" + zipPath);
+                        FileLog.PrintF("EOS_CompressZip OPT10059_1_2 zipCheckPath=" + zipCheckPath);
+                        CompressZip(zipPath, "OPT10059_", "_1_2");
+                        DeleteFile(zipPath, "OPT10059_", "_1_2");
+                        File.Move(zipCheckPath, ftpCheckPath);
+                    }
+                }
+                zipPath = path + "OPT10059_" + endDateEos + "_2_1.zip";
+                zipCheckPath = path + "OPT10059_2_1.dat";
+                ftpCheckPath = path + "OPT10059_2_1_FTP.dat";
+                if (File.Exists(zipPath) == false)
+                {
+                    if (File.Exists(zipCheckPath))
+                    {
+                        FileLog.PrintF("EOS_CompressZip OPT10059_2_1 zipPath=" + zipPath);
+                        FileLog.PrintF("EOS_CompressZip OPT10059_2_1 zipCheckPath=" + zipCheckPath);
+                        CompressZip(zipPath, "OPT10059_", "_2_1");
+                        DeleteFile(zipPath, "OPT10059_", "_2_1");
+                        File.Move(zipCheckPath, ftpCheckPath);
+                    }
+                }
+                zipPath = path + "OPT10059_" + endDateEos + "_2_2.zip";
+                zipCheckPath = path + "OPT10059_2_2.dat";
+                ftpCheckPath = path + "OPT10059_2_2_FTP.dat";
+                if (File.Exists(zipPath) == false)
+                {
+                    if (File.Exists(zipCheckPath))
+                    {
+                        FileLog.PrintF("EOS_CompressZip OPT10059_2_2 zipPath=" + zipPath);
+                        FileLog.PrintF("EOS_CompressZip OPT10059_2_2 zipCheckPath=" + zipCheckPath);
+                        CompressZip(zipPath, "OPT10059_", "_2_2");
+                        DeleteFile(zipPath, "OPT10059_", "_2_2");
+                        File.Move(zipCheckPath, ftpCheckPath);
+                    }
+                }
+                //4. 공매도추이요청
+                zipPath = path + "OPT10014_" + endDateEos + ".zip";
+                zipCheckPath = path + "OPT10014.dat";
+                ftpCheckPath = path + "OPT10014_FTP.dat";
+                if (File.Exists(zipPath) == false)
+                {
+                    if (File.Exists(zipCheckPath))
+                    {
+                        FileLog.PrintF("EOS_CompressZip OPT10014 zipPath=" + zipPath);
+                        FileLog.PrintF("EOS_CompressZip OPT10014 zipCheckPath=" + zipCheckPath);
+                        CompressZip(zipPath, "OPT10014_", "");
+                        DeleteFile(zipPath, "OPT10014_", "");
+                        File.Move(zipCheckPath, ftpCheckPath);
+                    }
+                }
+
+                //5. 주식일봉차트조회요청
+                zipPath = path + "OPT10080_" + endDateEos + ".zip";
+                zipCheckPath = path + "OPT10080.dat";
+                ftpCheckPath = path + "OPT10080_FTP.dat";
+                if (File.Exists(zipPath) == false)
+                {
+                    if (File.Exists(zipCheckPath))
+                    {
+                        FileLog.PrintF("EOS_CompressZip OPT10080 zipPath=" + zipPath);
+                        FileLog.PrintF("EOS_CompressZip OPT10080 zipCheckPath=" + zipCheckPath);
+                        CompressZip(zipPath, "OPT10080_", "");
+                        DeleteFile(zipPath, "OPT10080_", "");
+                        File.Move(zipCheckPath, ftpCheckPath);
+                    }
+                }
+
+                //5. 주식일봉차트조회요청
+                zipPath = path + "OPT10001_" + endDateEos + ".zip";
+                zipCheckPath = path + "OPT10001.dat";
+                ftpCheckPath = path + "OPT10001_FTP.dat";
+                if (File.Exists(zipPath) == false)
+                {
+                    if (File.Exists(zipCheckPath))
+                    {
+                        FileLog.PrintF("EOS_CompressZip OPT10001 zipPath=" + zipPath);
+                        FileLog.PrintF("EOS_CompressZip OPT10001 zipCheckPath=" + zipCheckPath);
+                        CompressZip(zipPath, "OPT10001_", "");
+                        DeleteFile(zipPath, "OPT10001_", "");
+                        File.Move(zipCheckPath, ftpCheckPath);
+                    }
+                }
+                Thread.Sleep(300000);//5분이면 압축이 되겠지???
+            }
+        }
+
+        private void  DeleteFile(string zipPath, string startsWith, string endsWith)
+        {
+            FileLog.PrintF("DeleteFile zipPath=" + zipPath);
+            FileLog.PrintF("DeleteFile startsWith=" + startsWith);
+            FileLog.PrintF("DeleteFile endsWith=" + endsWith);
+            DirectoryInfo directorySelected = new DirectoryInfo(path);
+            //Directory.GetFiles(path,"*.txt",SearchOption.TopDirectoryOnly).Where(s=>s.StartsWith(startsWith));
+            FileInfo[] fileList = directorySelected.GetFiles(startsWith + "*" + endsWith + ".txt");
+            if (fileList.Count() > 0)
+            {
+                foreach (FileInfo file in fileList)
+                {
+                    file.Delete();
+                }
+                
+            }
+
+        }
+
+        private void UploadEosFiles()
+        {
+            while(true) {
+                FileLog.PrintF("UploadEosFiles");
+                uploadZipFiles("OPT10015_FTP.dat", "OPT10015","");
+                uploadZipFiles("OPT10059_1_1_FTP.dat", "OPT10059", "_1_1");
+                uploadZipFiles("OPT10059_1_2_FTP.dat", "OPT10059", "_1_2");
+                uploadZipFiles("OPT10059_2_1_FTP.dat", "OPT10059", "_2_1");
+                uploadZipFiles("OPT10059_2_2_FTP.dat", "OPT10059", "_2_2");
+                uploadZipFiles("OPT10014_FTP.dat", "OPT10014", "");
+                uploadZipFiles("OPT10080_FTP.dat", "OPT10080", "");
+                uploadZipFiles("OPT10081_FTP.dat", "OPT10081", "");
+                uploadZipFiles("OPT10001_FTP.dat", "OPT10001", "");
+                Thread.Sleep(300000); // 5분에 한번씩 검사해서 ftp 업로드
+            }
+        }
+
+        private void uploadZipFiles(String ftpCheckFileName, string startsWithZip, string endsWithZip)
+        {
+            FtpUtil ftpUtil = new FtpUtil("192.168.0.30", ftpUser, ftpPwd, "21");
+            DirectoryInfo directorySelected = new DirectoryInfo(path);
+            String ftpCheckPath = path + ftpCheckFileName;
+            FileInfo checkFile = new FileInfo(ftpCheckPath);
+            FileLog.PrintF("uploadZipFiles=> " + ftpCheckPath);
+            if (File.Exists(ftpCheckPath) == true)
+            {
+                FileInfo[] fileList = directorySelected.GetFiles(startsWithZip + "*" + endsWithZip + ".zip");
+                foreach (FileInfo file in fileList)
+                {
+                    bool ret1 = ftpUtil.Upload("/home/jijs/rubytest/mysqloader/BACKUP", file.FullName);
+                    FileLog.PrintF("UploadEosFiles ftpUtil.Upload=>" + file.Name + "_" + ret1.ToString());
+                    if (ret1 == true)
+                    {
+                        File.Move(file.FullName, path + "BACKUP\\" + file.Name);
+                    }
+                }
+                bool ret2 = ftpUtil.Upload("/home/jijs/rubytest/mysqloader/BACKUP", checkFile.FullName);
+                FileLog.PrintF("UploadEosFiles ftpUtil.Upload=>" + checkFile.Name + "_" + ret2.ToString());
+                if (ret2 == true)
+                {
+                    File.Delete(checkFile.FullName);
+                }
+            }
+        }
+        
+
+        public void PushFtpZipFiles()
+        {
+            DirectoryInfo directorySelected = new DirectoryInfo(path);
+            FileInfo[] fileList = directorySelected.GetFiles("*.zip");
+            FtpUtil ftpUtil = new FtpUtil("192.168.0.30", ftpUser, ftpPwd, "21");
+            /*FTP 서버에 있는 파일들 읽어오기
+            String[] test = ftpUtil.GetFileList("/home/jijs/rubytest/mysqloader/BACKUP/");
+            for (int i = 0; i < test.Length; i++)
+            {
+                Console.WriteLine(test[i]);
+            }
+            */
+            /*
+            //파일 다운로드 테스트.
+            String dirPath = System.IO.Path.GetDirectoryName(path);
+            String tmp = dirPath + "\\OPT10081_20160208.zip";
+            Console.WriteLine("dirPath =" + dirPath);
+            Console.WriteLine("tmp =" + tmp);
+            bool ret = ftpUtil.Download(tmp, "/home/jijs/rubytest/mysqloader/data/OPT10081_20160208.zip");
+            Console.WriteLine("ftpUtil.Download ret =" + ret);
+            */
+
+            /*
+            //파일 업로드 테스트.
+            String dirPath1 = System.IO.Path.GetDirectoryName(path);
+            String tmp1 = dirPath + "\\OPT10081_000020_20160209.log";
+            Console.WriteLine("dirPath1 =" + dirPath1);
+            Console.WriteLine("tmp1 =" + tmp1);
+            //  String fileName= Path.GetFileName(tmp1);
+            //Console.WriteLine("ftpUtil.Upload fileName =" + fileName);
+            bool ret1 = ftpUtil.Upload("/home/jijs/rubytest/mysqloader/data", tmp1);
+            Console.WriteLine("ftpUtil.Upload ret1 =" + ret1);
+            */
+
+            foreach (FileInfo file in fileList)
+            {
+                bool ret1 = ftpUtil.Upload("/home/jijs/rubytest/mysqloader/BACKUP", file.FullName);
+                FileLog.PrintF("PushFtpZipFiles ftpUtil.Upload file.Name_ret1=" + file.Name +"_"+ret1.ToString());
             }
 
             
-
-            if (!File.Exists(inputFilePath))
-            {
-                FileLog.PrintF("FtpUpload 파일이 존재하지 않음=>" + inputFilePath);
-                return;
-            }
-
-            FileLog.PrintF("FtpUpload inputFilePath 1 = " + inputFilePath);
-
-            // 입력파일을 바이트 배열로 읽음
-            byte[] data;
-            using (StreamReader reader = new StreamReader(inputFilePath))
-            {
-                data = Encoding.UTF8.GetBytes(reader.ReadToEnd());
-            }
-
-            FileLog.PrintF("FtpUpload inputFilePath 2 = " + inputFilePath);
-
-            // RequestStream에 데이타를 쓴다
-            req.ContentLength = data.Length;
-            using (Stream reqStream = req.GetRequestStream())
-            {
-                reqStream.Write(data, 0, data.Length);
-            }
-
-            FileLog.PrintF("FtpUpload inputFilePath 3 = " + inputFilePath);
-
-            // FTP Upload 실행
-            using (FtpWebResponse resp = (FtpWebResponse)req.GetResponse())
-            {
-                // FTP 결과 상태 출력
-                Console.WriteLine("Upload: {0}", resp.StatusDescription);
-                FileLog.PrintF("Upload = " + resp.StatusDescription);
-            }
-
-            FileLog.PrintF("FtpUpload inputFilePath 4 = " + inputFilePath);
         }
 
+        private void CompressZip(string zipPath,string startsWith,string endsWith)
+        {
+            DirectoryInfo directorySelected = new DirectoryInfo(path);
+            //Directory.GetFiles(path,"*.txt",SearchOption.TopDirectoryOnly).Where(s=>s.StartsWith(startsWith));
+            FileInfo[] fileList= directorySelected.GetFiles(startsWith + "*" + endsWith + ".txt");
+            
+            
+            if (fileList.Count() > 0 && getStockCodeList().Count() <= fileList.Count())
+            {
+                //카운트가 맞을때만 압축하는것도 좋은 예지만 이것만으로는 TEXT파일에 끝까지데이터가 있다는걸 보장을 할수 없다.
+
+                FileLog.PrintF("CompressZip zipPath=" + zipPath);
+                FileLog.PrintF("CompressZip startsWith=" + startsWith);
+                FileLog.PrintF("CompressZip endsWith=" + endsWith);
+                using (FileStream zipToCreate = new FileStream(zipPath, FileMode.Create))
+                {
+                    using (ZipArchive archive = new ZipArchive(zipToCreate, ZipArchiveMode.Create))
+                    {
+                        foreach (FileInfo fileToCompress in fileList)
+                        {
+                            archive.CreateEntryFromFile(fileToCompress.FullName, fileToCompress.Name);
+                        }
+                    }
+                }
+                
+            }
+            
+        }
+
+        private void DecompressZip(string zipPath,string extractPath,string startsWith)
+        {
+            //*이 메소드는 쓸일이 없긴한데..*/
+            using (ZipArchive archive = ZipFile.OpenRead(zipPath))
+            {
+                foreach (ZipArchiveEntry entry in archive.Entries)
+                {
+                    if (entry.FullName.StartsWith(startsWith, StringComparison.OrdinalIgnoreCase)) //startsWith에 해당하는것만 압축이 풀리도록
+                    {
+                        entry.ExtractToFile(Path.Combine(extractPath, entry.FullName));
+                    }
+                }
+            }
+        }
+       
         public AxKHOpenAPI getAxKHOpenAPIInstance()
         {
             return axKHOpenAPI;
@@ -430,47 +751,36 @@ namespace OpenApi
         private   AxKHOpenAPI axKHOpenAPI;
 
         private static Class1 _class1 = null;
-        public static Class1 getClass1Instance()
-        {
-            if (_multiThread == false)
-            {
-                if (_class1 == null)
-                {
+        private static Object _object1  = new Object();
+        public static Class1 getClass1Instance() {
+            if (_multiThread == false) {
+                if (_class1 == null) {
                     _class1 = new Class1();
-                }
-               
+                }               
             }else{
-                if (_class1 == null)
-                {
-                    lock (_class1)
-                    {
+                if (_class1 == null) {
+                    lock (_object1) {
                         _class1 = new Class1();
                     }
-                }
-                
+                }                
             }
             return _class1;
-
-            
         }
 
 
-        // 실시간 연결 종료
-        public void DisconnectAllRealData()
-        {
-            for (int i = _scrNum; i > 5000; i--)
-            {
+        // EOS 연결 종료
+        public void DisconnectAllEOSData() {
+            FileLog.PrintF("DisconnectAllEOSData");
+            for (int i = _scrNum; i > 5000; i--) {
                 axKHOpenAPI.DisconnectRealData(i.ToString());
             }
-
             _scrNum = 5000;
             axKHOpenAPI.CommTerminate();
         }
 
 
-        // 화면번호 생산
-        public string GetScrNum()
-        {
+        //EOS 화면번호 생산
+        public string GetEosScrNum() {
             if (_scrNum < 9999)
                 _scrNum++;
             else
@@ -479,19 +789,70 @@ namespace OpenApi
             return _scrNum.ToString();
         }
 
-        public List<String> getStockCodeList()
+
+        // 실시간 연결 종료
+        public void DisconnectAllAnyTimeData()
         {
+            FileLog.PrintF("DisconnectAllAnyTimeData");
+            for (int i = _scrNumAnyTime; i > 1000; i--)
+            {
+                axKHOpenAPI.DisconnectRealData(i.ToString());
+            }
+            _scrNumAnyTime = 1000;
+            axKHOpenAPI.CommTerminate();
+        }
+
+        // 화면번호 생산
+        public string GetAnyTimeScrNum()
+        {
+            if (_scrNumAnyTime < 5000)
+                _scrNumAnyTime++;
+            else
+                _scrNumAnyTime = 1000;
+
+            return _scrNumAnyTime.ToString();
+        }
+
+        public List<String> getStockCodeList() {
             return stockCodeList;
         }
 
-
-
         private List<String> setStockCodeList()
         {
-            List<String> tt = new List<string>();
-            using (MySqlConnection conn = new MySqlConnection(connStr))
+            //약간 문제가 있었다. elw가 가끔 키움에서 안가져오는것같다. 그래서 장내랑,코스피만 하는걸로..
+            List<String> ttt = new List<String>();
+
+            FileLog.PrintF("setStockCodeList START");
+            List<String> arrTmp = new List<String>();
+            String tmp=axKHOpenAPI.GetCodeListByMarket("0");
+            //FileLog.PrintF("setStockCodeList tmp=>"+ tmp);
+            String[] arrT = tmp.Split(';');
+
+            String tmp1 = axKHOpenAPI.GetCodeListByMarket("10");
+            //FileLog.PrintF("setStockCodeList tmp1=>" + tmp1);
+            String[] arrT1 = tmp1.Split(';');
+            var tt1=arrT1.Concat(arrT).ToArray();
+            Array.Sort(tt1);
+            foreach (String tt in tt1)
             {
-                string sql = "SELECT STOCK_CODE FROM stocks";
+                //FileLog.PrintF("tt1 =" + tt);
+                if (!tt.Equals(""))
+                {
+                    if(!ttt.Contains(tt))
+                    ttt.Add(tt);
+                }
+            }
+            FileLog.PrintF("setStockCodeList END");
+            return ttt;
+        }
+
+        private List<String> setStockCodeListDb() {
+            //디비에 있는걸 읽어오니.. 약간 문제가 있었다. elw가 가끔 키움에서 안가져오는것같다.
+            List<String> tt = new List<string>();
+            using (MySqlConnection conn = new MySqlConnection(connStr)) {
+                //string sql = "SELECT STOCK_CODE FROM stocks WHERE ";
+                String sql = "select distinct stock_code from stocks ta, market_stocks tb where ta.stock_code = tb.stock_code_id and market_code_id in (0,10) order by stock_code asc";
+                //장내와 코스닥만 조회하도록; 기존에 ELW같은거 같이 조회했더니 키움에서 약간 문제가 있는듯하다.
                 conn.Open();
                 //ExecuteReader를 이용하여
                 //연결 모드로 데이타 가져오기

@@ -19,10 +19,10 @@
     <ServiceContractMappings />
   </ClientOptions>
   <MetadataSources>
-    <MetadataSource Address="http://192.168.0.30:3001/receive/wsdl" Protocol="http" SourceId="1" />
+    <MetadataSource Address="http://192.168.0.30:3000/receive/wsdl" Protocol="http" SourceId="1" />
   </MetadataSources>
   <Metadata>
-    <MetadataFile FileName="receive.wsdl" MetadataType="Wsdl" ID="509d3a5e-a81a-4099-9183-1e0bd50c3ae4" SourceId="1" SourceUrl="http://192.168.0.30:3001/receive/wsdl" />
+    <MetadataFile FileName="receive.wsdl" MetadataType="Wsdl" ID="509d3a5e-a81a-4099-9183-1e0bd50c3ae4" SourceId="1" SourceUrl="http://192.168.0.30:3000/receive/wsdl" />
   </Metadata>
   <Extensions>
     <ExtensionFile FileName="configuration91.svcinfo" Name="configuration91.svcinfo" />

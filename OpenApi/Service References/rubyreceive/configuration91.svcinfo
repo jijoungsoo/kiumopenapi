@@ -112,10 +112,10 @@
     </bindingConfiguration>
   </bindingConfigurations>
   <endpoints>
-    <endpoint name="receive_port" contract="rubyreceive.receive_port" bindingType="basicHttpBinding" address="http://192.168.0.30:3001/receive/action" bindingConfiguration="receive_binding">
+    <endpoint name="receive_port" contract="rubyreceive.receive_port" bindingType="basicHttpBinding" address="http://192.168.0.30:3000/receive/action" bindingConfiguration="receive_binding">
       <properties>
         <property path="/address" isComplexType="false" isExplicitlyDefined="true" clrType="System.Uri, System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-          <serializedValue>http://192.168.0.30:3001/receive/action</serializedValue>
+          <serializedValue>http://192.168.0.30:3000/receive/action</serializedValue>
         </property>
         <property path="/behaviorConfiguration" isComplexType="false" isExplicitlyDefined="false" clrType="System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
           <serializedValue />

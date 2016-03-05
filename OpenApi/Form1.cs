@@ -13,6 +13,9 @@ using WcfServiceLibrary;
 using OpenApi.ReceiveTrData;
 using System.Threading;
 using System.Collections;
+using OpenApi.ReceiveTrData;
+using OpenApi.ReceiveRealData;
+using OpenApi.ReceiveChejanData;
 
 namespace OpenApi
 {
@@ -29,34 +32,68 @@ namespace OpenApi
         }
         private void init()
         {
-            Dictionary<String, String> comboSource = new Dictionary<String, String>();
-                   comboSource.Add("ACCOUNT_CNT", "전체계좌수");
-                   comboSource.Add("ACCNO", "전체계좌");
-                   comboSource.Add("USER_ID", "사용자ID");
-                   comboSource.Add("USER_NAME", "사용자명");
-                   comboSource.Add("KEY_BSECGB", "키보드보안 해지여부. 0:정상, 1:해지");
-                   comboSource.Add("FIREW_SECGB", "방화벽 설정 여부. 0:미설정, 1:설정, 2:해지");
+            Dictionary<String, String> comboSourceGetLoginInfo = new Dictionary<String, String>();
+            comboSourceGetLoginInfo.Add("ACCOUNT_CNT", "전체계좌수");
+            comboSourceGetLoginInfo.Add("ACCNO", "전체계좌");
+            comboSourceGetLoginInfo.Add("USER_ID", "사용자ID");
+            comboSourceGetLoginInfo.Add("USER_NAME", "사용자명");
+            comboSourceGetLoginInfo.Add("KEY_BSECGB", "키보드보안 해지여부. 0:정상, 1:해지");
+            comboSourceGetLoginInfo.Add("FIREW_SECGB", "방화벽 설정 여부. 0:미설정, 1:설정, 2:해지");
 
-            cb_GetLoginInfo.DataSource = new BindingSource(comboSource, null);
+            cb_GetLoginInfo.DataSource = new BindingSource(comboSourceGetLoginInfo, null);
             cb_GetLoginInfo.DisplayMember = "Value";
             cb_GetLoginInfo.ValueMember = "Key";
-                        
-            Dictionary<String, String> comboSource1 = new Dictionary<String, String>();
-            comboSource1.Add("0", "장내");
-            comboSource1.Add("3", "ELW");
-            comboSource1.Add("4", "뮤추얼펀드");
-            comboSource1.Add("5", "신주인수권");
-            comboSource1.Add("6", "리츠");
-            comboSource1.Add("8", "ETF");
-            comboSource1.Add("9", "하이일드펀드");
-            comboSource1.Add("10", "코스닥");
-            comboSource1.Add("30", "제3시장");
 
-            cb_GetCodeListByMarket.DataSource = new BindingSource(comboSource1, null);
+            Dictionary<String, String> comboSourceGetCodeListByMarket = new Dictionary<String, String>();
+            comboSourceGetCodeListByMarket.Add("0", "장내");
+            comboSourceGetCodeListByMarket.Add("3", "ELW");
+            comboSourceGetCodeListByMarket.Add("4", "뮤추얼펀드");
+            comboSourceGetCodeListByMarket.Add("5", "신주인수권");
+            comboSourceGetCodeListByMarket.Add("6", "리츠");
+            comboSourceGetCodeListByMarket.Add("8", "ETF");
+            comboSourceGetCodeListByMarket.Add("9", "하이일드펀드");
+            comboSourceGetCodeListByMarket.Add("10", "코스닥");
+            comboSourceGetCodeListByMarket.Add("30", "제3시장");
+
+            cb_GetCodeListByMarket.DataSource = new BindingSource(comboSourceGetCodeListByMarket, null);
             cb_GetCodeListByMarket.DisplayMember = "Value";
             cb_GetCodeListByMarket.ValueMember = "Key";
+
+
+            Dictionary<int, String> comboSourceSendOrderNOrderType = new Dictionary<int, String>();
+            comboSourceSendOrderNOrderType.Add(1, "(1)신규매수");
+            comboSourceSendOrderNOrderType.Add(2, "(2)신규매도");
+            comboSourceSendOrderNOrderType.Add(3, "(3)매수취소");
+            comboSourceSendOrderNOrderType.Add(4, "(4)매도취소");
+            comboSourceSendOrderNOrderType.Add(5, "(5)매수정정");
+            comboSourceSendOrderNOrderType.Add(6, "(6)매도정정");
+
+            cb_SendOrderNOrderType.DataSource = new BindingSource(comboSourceSendOrderNOrderType, null);
+            cb_SendOrderNOrderType.DisplayMember = "Value";
+            cb_SendOrderNOrderType.ValueMember = "Key";
+
+
+            Dictionary<String, String> comboSourceSendOrderSHogaGb = new Dictionary<String, String>();
+            comboSourceSendOrderSHogaGb.Add("00", "(00)지정가");
+            comboSourceSendOrderSHogaGb.Add("03", "(03)시장가");
+            comboSourceSendOrderSHogaGb.Add("05", "(05)조건부지정가");
+            comboSourceSendOrderSHogaGb.Add("06", "(06)최유리지정가");
+            comboSourceSendOrderSHogaGb.Add("07", "(07)최우선지정가");
+            comboSourceSendOrderSHogaGb.Add("10", "(10)지정가IOC");
+            comboSourceSendOrderSHogaGb.Add("13", "(13)시장가IOC");
+            comboSourceSendOrderSHogaGb.Add("16", "(16)최유리IOC");
+            comboSourceSendOrderSHogaGb.Add("20", "(20)지정가FOK");
+            comboSourceSendOrderSHogaGb.Add("23", "(23)시장가FOK");
+            comboSourceSendOrderSHogaGb.Add("26", "(26)최유리FOK");
+            comboSourceSendOrderSHogaGb.Add("61", "(61)지정가IOC");
+            comboSourceSendOrderSHogaGb.Add("81", "(81)지정가IOC");
+
+            cb_SendOrderSHogaGb.DataSource = new BindingSource(comboSourceSendOrderSHogaGb, null);
+            cb_SendOrderSHogaGb.DisplayMember = "Value";
+            cb_SendOrderSHogaGb.ValueMember = "Key";
+
         }
-        
+
 
         private void 로그인_Click(object sender, EventArgs e)
         {
@@ -70,63 +107,31 @@ namespace OpenApi
             }
         }
 
+        private Boolean IsConnected()
+        {
+            int ret = axKHOpenAPI.GetConnectState();
+            if (ret == 0)
+            {
+                return false;
+            }
+            else {
+                return true;
+            }
+
+        }
+
 
 
         private void axKHOpenAPI_OnReceiveTrData(object sender, AxKHOpenAPILib._DKHOpenAPIEvents_OnReceiveTrDataEvent e)
         {
             FileLog.PrintF("====================axKHOpenAPI_OnReceiveTrData===============================");
-            ReceiveTrDataFactory rtf = new ReceiveTrDataFactory();
-            rtf.getReceiveTrData(axKHOpenAPI, e);
-
+            FileLog.PrintF("axKHOpenAPI_OnReceiveTrData e.sRecordName=>" + e.sRecordName);
+            FileLog.PrintF("axKHOpenAPI_OnReceiveTrData e.sRQName=>" + e.sRQName);
+            FileLog.PrintF("axKHOpenAPI_OnReceiveTrData e.sScrNo=>" + e.sScrNo);
+            FileLog.PrintF("axKHOpenAPI_OnReceiveTrData e.sTrCode=>" + e.sTrCode);
             Logger(Log.디버깅, "====================axKHOpenAPI_OnReceiveTrData===============================");
-            
-            int nCnt = axKHOpenAPI.GetRepeatCnt(e.sTrCode, e.sRQName);
-            //FileLog.PrintF(String.Format("화면번호:{0} | RQName:{1} | TRCode:{2} | sRecordName:{3} |  sPreNext:{4}", e.sScrNo, e.sRQName, e.sTrCode, e.sRecordName, e.sPrevNext));
-
-            /*
-            sScrNo – 화면번호
-            sRQName – 사용자구분 명
-            sTrCode – Tran 명
-            sRecordName – Record 명
-            sPreNext – 연속조회 유무
-            */
-            if ("[0346]실시간계좌관리(T)-잔고확인".Equals(e.sRQName))
-            {
-                FileLog.PrintF("====================axKHOpenAPI_OnReceiveTrData===============================1");
-                String tmp= axKHOpenAPI.CommGetData(e.sTrCode, "", e.sRQName, 0, "예수금").Trim();
-                FileLog.PrintF("====================axKHOpenAPI_OnReceiveTrData===============================1:" + tmp);
-
-
-            }
-
-
-            if (e.sRQName == "주식주문")
-            {
-                string s원주문번호 = axKHOpenAPI.GetCommData(e.sTrCode, "", 0, "").Trim();
-
-                long n원주문번호 = 0;
-                bool canConvert = long.TryParse(s원주문번호, out n원주문번호);
-
-                if (canConvert == true)
-                Logger(Log.에러, s원주문번호);
-                else
-                    Logger(Log.에러, "잘못된 원주문번호 입니다");
-
-            }
-            // OPT1001 : 주식기본정보
-            else if (e.sRQName == "주식기본정보")
-            {
-                 nCnt = axKHOpenAPI.GetRepeatCnt(e.sTrCode, e.sRQName);
-
-                for (int i = 0; i < nCnt; i++)
-                {
-                    Logger(Log.조회, "{0} | 현재가:{1:N0} | 등락율:{2} | 거래량:{3:N0} ",
-                        axKHOpenAPI.CommGetData(e.sTrCode, "", e.sRQName, i, "종목명").Trim(),
-                        Int32.Parse(axKHOpenAPI.CommGetData(e.sTrCode, "", e.sRQName, i, "현재가").Trim()),
-                        axKHOpenAPI.CommGetData(e.sTrCode, "", e.sRQName, i, "등락율").Trim(),
-                        Int32.Parse(axKHOpenAPI.CommGetData(e.sTrCode, "", e.sRQName, i, "거래량").Trim()));
-                }
-            }
+            ReceiveTrDataFactory rtf = ReceiveTrDataFactory.getClass1Instance();
+            rtf.runReceiveTrData(axKHOpenAPI, e);
         }
 
         private void axKHOpenAPI_OnEventConnect(object sender, AxKHOpenAPILib._DKHOpenAPIEvents_OnEventConnectEvent e)
@@ -136,6 +141,7 @@ namespace OpenApi
             if (Error.IsError(e.nErrCode))
             {
                 Logger(Log.일반, "[로그인 처리결과] " + Error.GetErrorMessage());
+                class1.Start();
             }
             else
             {
@@ -145,9 +151,15 @@ namespace OpenApi
 
         private void axKHOpenAPI_OnReceiveChejanData(object sender, AxKHOpenAPILib._DKHOpenAPIEvents_OnReceiveChejanDataEvent e)
         {
+            /*주문이 들어가면 체결데이터가 이리들어온다고 한다...*/
             FileLog.PrintF("====================axKHOpenAPI_OnReceiveChejanData===============================");
             Logger(Log.디버깅, "====================axKHOpenAPI_OnReceiveChejanData===============================");
-            if (e.sGubun == "0")
+            FileLog.PrintF("axKHOpenAPI_OnReceiveChejanData e.sGubun =>" + e.sGubun);
+
+            ReceiveChejanDataFactory rtf = ReceiveChejanDataFactory.getClass1Instance();
+            rtf.runReceiveChejanData(axKHOpenAPI, e);
+
+            if (e.sGubun == "0") //0은 주문접수 주문체결
             {
                 Logger(Log.실시간, "구분 : 주문체결통보");
                 Logger(Log.실시간, "주문/체결시간 : " + axKHOpenAPI.GetChejanData(908));
@@ -158,9 +170,10 @@ namespace OpenApi
                 Logger(Log.실시간, "체결가격 : " + axKHOpenAPI.GetChejanData(910));
                 Logger(Log.실시간, "=======================================");
             }
-            else if (e.sGubun == "1")
+            else if (e.sGubun == "1")  //1은 반영된잔고를 보여준다.
             {
                 Logger(Log.실시간, "구분 : 잔고통보");
+
             }
             else if (e.sGubun == "3")
             {
@@ -174,26 +187,18 @@ namespace OpenApi
             FileLog.PrintF("====================axKHOpenAPI_OnReceiveMsg===============================");
             Logger(Log.디버깅, "====================axKHOpenAPI_OnReceiveMsg===============================");
             Logger(Log.조회, "화면번호:{0} | RQName:{1} | TRCode:{2} | 메세지:{3}", e.sScrNo, e.sRQName, e.sTrCode, e.sMsg);
-            FileLog.PrintF(String.Format("화면번호:{0} | RQName:{1} | TRCode:{2} | 메세지:{3}", e.sScrNo, e.sRQName, e.sTrCode, e.sMsg)) ;
-            
+            FileLog.PrintF(String.Format("화면번호:{0} | RQName:{1} | TRCode:{2} | 메세지:{3}", e.sScrNo, e.sRQName, e.sTrCode, e.sMsg));
+
         }
 
         private void axKHOpenAPI_OnReceiveRealData(object sender, AxKHOpenAPILib._DKHOpenAPIEvents_OnReceiveRealDataEvent e)
         {
             FileLog.PrintF("====================axKHOpenAPI_OnReceiveRealData===============================");
             Logger(Log.디버깅, "====================axKHOpenAPI_OnReceiveRealData===============================");
-            Logger(Log.실시간, "종목코드 : {0} | RealType : {1} | RealData : {2}",
-                e.sRealKey, e.sRealType, e.sRealData);
             FileLog.PrintF(String.Format("종목코드 : {0} | RealType : {1} | RealData : {2}", e.sRealKey, e.sRealType, e.sRealData));
-            if (e.sRealType == "주식시세")
-            {
-                Logger(Log.실시간, "종목코드 : {0} | 현재가 : {1:C} | 등락율 : {2} | 누적거래량 : {3:N0} ",
-                        e.sRealKey,
-                        Int32.Parse(axKHOpenAPI.GetCommRealData(e.sRealType, 10).Trim()),
-                        axKHOpenAPI.GetCommRealData(e.sRealType, 12).Trim(),
-                        Int32.Parse(axKHOpenAPI.GetCommRealData(e.sRealType, 13).Trim()));
-            }
-
+            ReceiveRealDataFactory rtf = ReceiveRealDataFactory.getClass1Instance();
+            rtf.runReceiveRealData(axKHOpenAPI, e);
+            
         }
 
         // 로그를 출력합니다.
@@ -206,7 +211,8 @@ namespace OpenApi
                 case Log.조회:
                     if (lst조회.InvokeRequired)
                     {
-                        lst조회.BeginInvoke(new Action(() => { 
+                        lst조회.BeginInvoke(new Action(() =>
+                        {
                             lst조회.Items.Add(message);
                             if (lst조회.Items.Count > 20)
                             {
@@ -215,7 +221,8 @@ namespace OpenApi
                             lst조회.SelectedIndex = lst조회.Items.Count - 1;
                         }));
 
-                    } else {
+                    }
+                    else {
                         lst조회.Items.Add(message);
                         if (lst조회.Items.Count > 20)
                         {
@@ -236,8 +243,9 @@ namespace OpenApi
                             }
                             lst에러.SelectedIndex = lst에러.Items.Count - 1;
                         }));
-                     
-                    } else
+
+                    }
+                    else
                     {
                         lst에러.Items.Add(message);
                         if (lst에러.Items.Count > 20)
@@ -261,7 +269,8 @@ namespace OpenApi
                             }
                             lst일반.SelectedIndex = lst일반.Items.Count - 1;
                         }));
-                    } else
+                    }
+                    else
                     {
                         lst일반.Items.Add(message);
                         if (lst일반.Items.Count > 20)
@@ -271,7 +280,7 @@ namespace OpenApi
                         lst일반.SelectedIndex = lst일반.Items.Count - 1;
                     }
 
-                        
+
                     break;
                 case Log.실시간:
                     if (lst실시간.InvokeRequired)
@@ -285,7 +294,8 @@ namespace OpenApi
                             }
                             lst실시간.SelectedIndex = lst실시간.Items.Count - 1;
                         }));
-                    } else
+                    }
+                    else
                     {
                         lst실시간.Items.Add(message);
                         if (lst실시간.Items.Count > 20)
@@ -294,7 +304,7 @@ namespace OpenApi
                         }
                         lst실시간.SelectedIndex = lst실시간.Items.Count - 1;
                     }
-                        
+
                     break;
                 case Log.디버깅:
                     if (lst디버깅.InvokeRequired)
@@ -307,8 +317,9 @@ namespace OpenApi
                                 lst디버깅.Items.Clear();
                             }
                             lst디버깅.SelectedIndex = lst디버깅.Items.Count - 1;
-                        }));                        
-                    } else
+                        }));
+                    }
+                    else
                     {
                         lst디버깅.Items.Add(message);
                         if (lst디버깅.Items.Count > 20)
@@ -317,7 +328,7 @@ namespace OpenApi
                         }
                         lst디버깅.SelectedIndex = lst디버깅.Items.Count - 1;
                     }
-                        
+
                     break;
                 default:
                     break;
@@ -338,6 +349,11 @@ namespace OpenApi
         private void axKHOpenAPI_OnReceiveTrCondition(object sender, AxKHOpenAPILib._DKHOpenAPIEvents_OnReceiveTrConditionEvent e)
         {
             FileLog.PrintF("====================axKHOpenAPI_OnReceiveTrCondition===============================");
+            FileLog.PrintF("[화면번호] : " + e.sScrNo);
+            FileLog.PrintF("[종목리스트] : " + e.strCodeList);
+            FileLog.PrintF("[조건명] : " + e.strConditionName);
+            FileLog.PrintF("[조건명 인덱스 ] : " + e.nIndex.ToString());
+            FileLog.PrintF("[연속조회] : " + e.nNext.ToString());
             Logger(Log.디버깅, "====================axKHOpenAPI_OnReceiveTrCondition===============================");
             Logger(Log.조회, "[화면번호] : " + e.sScrNo);
             Logger(Log.조회, "[종목리스트] : " + e.strCodeList);
@@ -354,28 +370,34 @@ namespace OpenApi
             if (e.lRet == 1)
             {
                 Logger(Log.일반, "[이벤트] 조건식 저장 성공");
+                FileLog.PrintF("[이벤트] 조건식 저장 성공");
+                String ret=axKHOpenAPI.GetConditionNameList(); // 인덱스1^조건명1;인덱스2^조건명2;인덱스3^조건명3;…  조건리스트를 불러온다.
+                FileLog.PrintF("btn_GetConditionNameList_Click ret=>" + ret);
             }
             else
             {
                 Logger(Log.에러, "[이벤트] 조건식 저장 실패 : " + e.sMsg);
+                FileLog.PrintF("[이벤트] 조건식 저장 실패 : " + e.sMsg);
             }
 
         }
 
         private void 로그아웃_Click(object sender, EventArgs e)
         {
-            class1.DisconnectAllRealData();
-            Logger(Log.일반, "로그아웃");
-
+            class1.DisconnectAllEOSData();
+            class1.DisconnectAllAnyTimeData();
+            Logger(Log.일반, "실시간해제");
         }
 
         private void 접속상태_Click(object sender, EventArgs e)
         {
             int ret = axKHOpenAPI.GetConnectState();
-                Logger(Log.일반, "Open API 연결 : "+ ret);
-            if (ret == 0){
+            Logger(Log.일반, "Open API 연결 : " + ret);
+            if (ret == 0)
+            {
                 Logger(Log.일반, "Open API 연결 : 미연결");
-            }else{
+            }
+            else {
                 Logger(Log.일반, "Open API 연결 : 연결중");
             }
 
@@ -383,20 +405,31 @@ namespace OpenApi
 
         private void debugCommunicationState(CommunicationState ret)
         {
-            if (ret == CommunicationState.Created) {
+            if (ret == CommunicationState.Created)
+            {
                 Logger(Log.디버깅, "CommunicationState.Created 상태");
-            } else if (ret == CommunicationState.Opening) {
+            }
+            else if (ret == CommunicationState.Opening)
+            {
                 Logger(Log.디버깅, "CommunicationState.Opening 상태");
                 //     통신 개체에서 전환 중인 것을 나타냅니다는 System.ServiceModel.CommunicationState.Opening 상태에 있는
-            } else if (ret == CommunicationState.Opened) {
+            }
+            else if (ret == CommunicationState.Opened)
+            {
                 Logger(Log.디버깅, "CommunicationState.Opened 상태");
                 //     통신 개체가 현재 열려 있고 사용할 준비가 되었습니다. 임을 나타냅니다.
-            } else if (ret == CommunicationState.Closing) {
+            }
+            else if (ret == CommunicationState.Closing)
+            {
                 Logger(Log.디버깅, "CommunicationState.Closing 상태");
-            } else if (ret == CommunicationState.Closed) {
+            }
+            else if (ret == CommunicationState.Closed)
+            {
                 Logger(Log.디버깅, "CommunicationState.Closed 상태");
                 //     통신 개체가 닫혀 서 더 이상 사용할 수 없습니다 것을 나타냅니다.
-            } else if (ret == CommunicationState.Faulted) {
+            }
+            else if (ret == CommunicationState.Faulted)
+            {
                 Logger(Log.디버깅, "CommunicationState.Faulted 상태");
                 //     장애는 더 이상 사용할 수 없습니다와에서 복구할 수 없는 오류 또는 통신 개체를 발견 했음을 나타냅니다.
             }
@@ -437,7 +470,8 @@ namespace OpenApi
         private void WCF_ON_Click(object sender, EventArgs e)
         {
             // starting the thread
-            if(t==null) { 
+            if (t == null)
+            {
                 t = new Thread(StartService);
                 t.Start();
             }
@@ -449,19 +483,22 @@ namespace OpenApi
             {
                 productsServiceHost.Close();
                 Logger(Log.디버깅, "WCF_OFF:호출");
-            } else
+            }
+            else
             {
                 Logger(Log.디버깅, "WCF_OFF:wcf 객체 null");
             }
-            
+
         }
 
         private void WCF상태_Click(object sender, EventArgs e)
         {
-            if (productsServiceHost != null) { 
+            if (productsServiceHost != null)
+            {
                 CommunicationState ret = productsServiceHost.State;
                 debugCommunicationState(ret);
-            } else {
+            }
+            else {
                 Logger(Log.디버깅, "WCF상태:wcf 객체 null");
             }
 
@@ -469,8 +506,14 @@ namespace OpenApi
 
         private void GetLoginInfo_Click(object sender, EventArgs e)
         {
-            String sTag =cb_GetLoginInfo.SelectedValue.ToString();
-            Logger(Log.디버깅, "cb_GetLoginIn.Value:"+ sTag);
+            if (IsConnected() == false)
+            {
+                MessageBox.Show("로그인을해주세요");
+                return;
+            }
+
+            String sTag = cb_GetLoginInfo.SelectedValue.ToString();
+            Logger(Log.디버깅, "cb_GetLoginIn.Value:" + sTag);
             String tTag = cb_GetLoginInfo.Text;
             Logger(Log.디버깅, "cb_GetLoginIn.Text:" + tTag);
             if (sTag.Equals(""))
@@ -478,9 +521,9 @@ namespace OpenApi
                 MessageBox.Show("사용자정보를 반환할 키값을 선택해주세요");
                 return;
             }
-            String ret=  axKHOpenAPI.GetLoginInfo(sTag);
-            Logger(Log.디버깅, "GetLoginIn[" + sTag+"]:"+ ret);
-            if(sTag.Equals("ACCNO"))
+            String ret = axKHOpenAPI.GetLoginInfo(sTag);
+            Logger(Log.디버깅, "GetLoginIn[" + sTag + "]:" + ret);
+            if (sTag.Equals("ACCNO"))
             {
                 tx_account.Text = ret;
             }
@@ -488,13 +531,24 @@ namespace OpenApi
 
         private void GetAPIModulePath_Click(object sender, EventArgs e)
         {
+            if (IsConnected() == false)
+            {
+                MessageBox.Show("로그인을해주세요");
+                return;
+            }
             /*OpenAPI모듈의 경로를 반환한다.*/
-            String ret= axKHOpenAPI.GetAPIModulePath();
+            String ret = axKHOpenAPI.GetAPIModulePath();
             Logger(Log.디버깅, "GetAPIModulePath:" + ret);
         }
 
         private void GetCodeListByMarket_Click(object sender, EventArgs e)
         {
+            if (IsConnected() == false)
+            {
+                MessageBox.Show("로그인을해주세요");
+                return;
+            }
+
             String sTag = cb_GetCodeListByMarket.SelectedValue.ToString();
             Logger(Log.디버깅, "cb_GetCodeListByMarket.Value:" + sTag);
             String tTag = cb_GetCodeListByMarket.Text;
@@ -507,7 +561,7 @@ namespace OpenApi
             String ret = axKHOpenAPI.GetCodeListByMarket(sTag);
             Logger(Log.디버깅, "GetCodeListByMarket[" + sTag + "]:" + ret);
         }
-        private void wcfFaultHandler(object sender,EventArgs e)
+        private void wcfFaultHandler(object sender, EventArgs e)
         {
 
         }
@@ -519,6 +573,11 @@ namespace OpenApi
 
         private void GetBalance_Click(object sender, EventArgs e)
         {
+            if (IsConnected() == false)
+            {
+                MessageBox.Show("로그인을해주세요");
+                return;
+            }
             String account = tx_account.Text;
             String password = tx_password.Text;
 
@@ -538,9 +597,9 @@ namespace OpenApi
 
             axKHOpenAPI.SetInputValue("계좌번호", account.Trim());
             axKHOpenAPI.SetInputValue("비밀번호", password.Trim());
-            axKHOpenAPI.SetInputValue("상장폐지조회구분"    , "0");
+            axKHOpenAPI.SetInputValue("상장폐지조회구분", "0");
             axKHOpenAPI.SetInputValue("비밀번호입력매체구분", "00");
- //int nRet = axKHOpenAPI.CommRqData("RQName", "OPW00004", 0, "0200");
+            //int nRet = axKHOpenAPI.CommRqData("RQName", "OPW00004", 0, "0200");
             int nRet = axKHOpenAPI.CommRqData("[0346]실시간계좌관리(T)-잔고확인", "OPW00004", 0, "화면번호");
             if (Error.IsError(nRet))
             {
@@ -551,14 +610,14 @@ namespace OpenApi
                 Logger(Log.에러, "[OPW00004] : " + Error.GetErrorMessage());
             }
             Logger(Log.디버깅, "GetBalance_Click::CommRqData::ret:" + nRet);
-            
+
         }
 
         private void lst조회_KeyUp(object sender, KeyEventArgs e)
         {
             if (sender != lst조회) return;
 
-            if (e.Control && e.KeyCode == Keys.C) 
+            if (e.Control && e.KeyCode == Keys.C)
                 CopySelectedValuesToClipboard();
         }
 
@@ -572,14 +631,14 @@ namespace OpenApi
         }
 
 
-        private void threadJob(OpenApi.Spell.spellOpt spellOpt)
+        private void threadJob(OpenApi.Spell.SpellOpt spellOpt)
         {
             List<String> stockCodeList = Class1.getClass1Instance().getStockCodeList();
             for (int i = 0; i < stockCodeList.Count; i++)
             {
-                OpenApi.Spell.spellOpt tmp= spellOpt.ShallowCopy();
+                OpenApi.Spell.SpellOpt tmp = spellOpt.ShallowCopy();
                 String stockCode = stockCodeList[i];
-                String sScrNo = Class1.getClass1Instance().GetScrNum();
+                String sScrNo = Class1.getClass1Instance().GetEosScrNum();
                 String keyStockCodeLayout = "sRQName:{0}|sTrCode:{1}|sScreenNo:{2}";
                 String keyStockCode = String.Format(keyStockCodeLayout
                     , tmp.sRQNAME
@@ -596,40 +655,52 @@ namespace OpenApi
                 tmp.sScreenNo = sScrNo;
                 tmp.stockCode = stockCode;
                 tmp.key = key;
+                tmp.reportGubun = "FILE";
 
-              //  FileLog.PrintF("threadJob keyStockCode="+ keyStockCode);
-              //  FileLog.PrintF("threadJob key=" + key);
+                //  FileLog.PrintF("threadJob keyStockCode="+ keyStockCode);
+                //  FileLog.PrintF("threadJob key=" + key);
 
                 //String logDate = DateTime.Today.ToString("yyyyMMdd");
-                
+
                 String path = tmp.GetFileName();
-                if (!System.IO.File.Exists(path))
-                {
-                    Class1.getClass1Instance().EnqueueByOrderQueue(tmp);
-                    Class1.getClass1Instance().AddSpellDictionary(key, tmp);
-                    Class1.getClass1Instance().AddStockCodeDictionary(keyStockCode, stockCode);
-                }
-
+                String zipPath =tmp.GetZipFileName();
                 
+                
+                if(!System.IO.File.Exists(zipPath)) {
+                //    FileLog.PrintF("threadJob zipPath=" + zipPath);
+                    if (!System.IO.File.Exists(path))
+                    {
+                  //      FileLog.PrintF("threadJob path=" + path);
+                        Class1.getClass1Instance().EnqueueByOrderQueue(tmp);
+                        Class1.getClass1Instance().AddSpellDictionary(key, tmp);
+                        Class1.getClass1Instance().AddStockCodeDictionary(keyStockCode, stockCode);
+                        Class1.getClass1Instance().InCraeteOrderedCodeCount();
 
+                    }
+                }
             }
         }
 
         private void GetDayStock_Click(object sender, EventArgs e)
         {
+            if (IsConnected() == false)
+            {
+                MessageBox.Show("로그인을해주세요");
+                return;
+            }
+
             String startDate = tx_startDate.Text;
             String endDate = tx_endDate.Text;
             String sTrCode = "OPT10081";
             String sRQName = "주식일봉차트조회";
 
-            OpenApi.Spell.spellOpt spellOpt10081 = new OpenApi.Spell.spellOpt();
+            OpenApi.Spell.SpellOpt spellOpt10081 = new OpenApi.Spell.SpellOpt();
             spellOpt10081.sRQNAME = sRQName;
             spellOpt10081.sTrCode = sTrCode;
             //spellOpt10081.stockCode = 종목코드;
             spellOpt10081.startDate = startDate;
             spellOpt10081.endDate = endDate;
             spellOpt10081.nPrevNext = 0;
-            spellOpt10081.modifyGubun = "1";
             //spellOpt10081.sScreenNo = sScrNo;
 
             String 종목코드 = tx_stockCode.Text.Trim();
@@ -638,9 +709,10 @@ namespace OpenApi
                 threadJob(spellOpt10081);
                 FileLog.PrintF("GetDayStock_Click threadJob");
 
-            }  else
+            }
+            else
             {
-                String sScrNo = Class1.getClass1Instance().GetScrNum();
+                String sScrNo = Class1.getClass1Instance().GetEosScrNum();
                 String keyStockCodeLayout = "sRQName:{0}|sTrCode:{1}|sScreenNo:{2}";
                 String keyStockCode = String.Format(keyStockCodeLayout
                     , sRQName
@@ -656,26 +728,30 @@ namespace OpenApi
                 );
                 FileLog.PrintF("keyStockCode  ==" + keyStockCode);
 
+
                 axKHOpenAPI.SetInputValue("종목코드", 종목코드);
                 axKHOpenAPI.SetInputValue("기준일자", endDate);
                 axKHOpenAPI.SetInputValue("수정주가구분", "1");
 
 
-                int nRet = axKHOpenAPI.CommRqData(sRQName, sTrCode, 0, sScrNo);
 
-                if (Error.IsError(nRet))
-                {
-                    Logger(Log.일반, "[OPT10081] : " + Error.GetErrorMessage());
-                }
-                else
-                {
-                    Logger(Log.에러, "[OPT10081] : " + Error.GetErrorMessage());
-                }
-            }    
+                spellOpt10081.stockCode = 종목코드;
+                spellOpt10081.key = key;
+                spellOpt10081.sScreenNo = sScrNo;
+                spellOpt10081.reportGubun = "FILE";
+                Class1.getClass1Instance().EnqueueByOrderQueue(spellOpt10081);
+                Class1.getClass1Instance().AddSpellDictionary(key, spellOpt10081);
+                Class1.getClass1Instance().AddStockCodeDictionary(keyStockCode, 종목코드);
+            }
         }
 
         private void GetStockOrgan_Click(object sender, EventArgs e)
         {
+            if (IsConnected() == false)
+            {
+                MessageBox.Show("로그인을해주세요");
+                return;
+            }
             string 매매구분 = null;
             foreach (Control control in this.매매구분.Controls)
             {
@@ -688,7 +764,7 @@ namespace OpenApi
                     }
                 }
             }
-            // Search second GroupBox.
+
             string 금액수량구분 = null;
             foreach (Control control in this.금액수량구분.Controls)
             {
@@ -701,43 +777,38 @@ namespace OpenApi
                     }
                 }
             }
-            String stockCode=this.tx_stockCode_1.Text.ToString();
+
+            String stockCode = this.tx_stockCode_1.Text.ToString();
             String startDate = this.tx_startDate_1.Text.ToString();
             String endDate = this.tx_endDate_1.Text.ToString();
             String sRQName = "종목별투자자기관별차트요청";
             String sTrCode = "OPT10059";
-            String 단위구분 = "1";
-
 
             FileLog.PrintF("GetStockOrgan_Click stockCode=" + stockCode);
             FileLog.PrintF("GetStockOrgan_Click startDate=" + startDate);
             FileLog.PrintF("GetStockOrgan_Click endDate=" + endDate);
-            FileLog.PrintF("GetStockOrgan_Click 매매구분="+ 매매구분);
+            FileLog.PrintF("GetStockOrgan_Click 매매구분=" + 매매구분);
             FileLog.PrintF("GetStockOrgan_Click 금액수량구분=" + 금액수량구분);
-            FileLog.PrintF("GetStockOrgan_Click 단위구분=" + 단위구분);
 
-            OpenApi.Spell.spellOpt spellOpt10060 = new OpenApi.Spell.spellOpt();
-            spellOpt10060.sRQNAME = sRQName;
-            spellOpt10060.sTrCode = sTrCode;
+            OpenApi.Spell.SpellOpt spellOpt10059 = new OpenApi.Spell.SpellOpt();
+            spellOpt10059.sRQNAME = sRQName;
+            spellOpt10059.sTrCode = sTrCode;
             //spellOpt10060.stockCode = stockCode;
-            spellOpt10060.startDate = startDate;
-            spellOpt10060.endDate = endDate;
-            spellOpt10060.nPrevNext = 0;
-            spellOpt10060.priceOrAmount = 금액수량구분;
-            spellOpt10060.buyOrSell = 매매구분;
+            spellOpt10059.startDate = startDate;
+            spellOpt10059.endDate = endDate;
+            spellOpt10059.nPrevNext = 0;
+            spellOpt10059.priceOrAmount = 금액수량구분;
+            spellOpt10059.buyOrSell = 매매구분;
             //spellOpt10060.sScreenNo = sScrNo;
-
-
-
 
             if (stockCode.Equals("ALL"))
             {
-                threadJob(spellOpt10060);
+                threadJob(spellOpt10059);
                 FileLog.PrintF("GetStockOrgan_Click threadJob");
             }
             else
             {
-                String sScrNo = Class1.getClass1Instance().GetScrNum();
+                String sScrNo = Class1.getClass1Instance().GetEosScrNum();
                 String keyStockCodeLayout = "sRQName:{0}|sTrCode:{1}|sScreenNo:{2}";
                 String keyStockCode = String.Format(keyStockCodeLayout
                     , sRQName
@@ -752,32 +823,819 @@ namespace OpenApi
                     , stockCode
                 );
                 FileLog.PrintF("keyStockCode  ==" + keyStockCode);
-                /*일자 = YYYYMMDD(20160101 연도4자리, 월 2자리, 일 2자리 형식)*/
-                axKHOpenAPI.SetInputValue("일자", endDate);
-                /*종목코드 = 전문 조회할 종목코드*/
-                axKHOpenAPI.SetInputValue("종목코드", stockCode);
-                /*금액수량구분 = 1:금액, 2:수량*/
-                axKHOpenAPI.SetInputValue("금액수량구분"  , 금액수량구분);
-                /*매매구분 = 0:순매수, 1:매수, 2:매도*/
-                axKHOpenAPI.SetInputValue("매매구분"    , 매매구분);
-                /*단위구분 = 1000:천주, 1:단주*/
-                axKHOpenAPI.SetInputValue("단위구분"    , "1");
+                FileLog.PrintF("key  ==" + key);
+
+                spellOpt10059.stockCode = stockCode;
+                spellOpt10059.key = key;
+                spellOpt10059.sScreenNo = sScrNo;
+                spellOpt10059.reportGubun = "FILE";
+
+                Class1.getClass1Instance().EnqueueByOrderQueue(spellOpt10059);
+                Class1.getClass1Instance().AddSpellDictionary(key, spellOpt10059);
+                Class1.getClass1Instance().AddStockCodeDictionary(keyStockCode, stockCode);
+            }
+        }
+
+        private void btn_sellStockOff_Click(object sender, EventArgs e)
+        {
+            if (IsConnected() == false)
+            {
+                MessageBox.Show("로그인을해주세요");
+                return;
+            }
+            String stockCode = this.tx_stockCode_2.Text.ToString();
+            String startDate = this.tx_startDate_2.Text.ToString();
+            String endDate = this.tx_endDate_2.Text.ToString();
+            String sRQName = "공매도추이요청";
+            String sTrCode = "OPT10014";
+
+            FileLog.PrintF("btn_sellStockOff_Click stockCode=" + stockCode);
+            FileLog.PrintF("btn_sellStockOff_Click startDate=" + startDate);
+            FileLog.PrintF("btn_sellStockOff_Click endDate=" + endDate);
+
+            OpenApi.Spell.SpellOpt spellOpt10014 = new OpenApi.Spell.SpellOpt();
+            spellOpt10014.sRQNAME = sRQName;
+            spellOpt10014.sTrCode = sTrCode;
+            //spellOpt10060.stockCode = stockCode;
+            spellOpt10014.startDate = startDate;
+            spellOpt10014.endDate = endDate;
+            spellOpt10014.nPrevNext = 0;
+            //spellOpt10060.sScreenNo = sScrNo;
+
+            if (stockCode.Equals("ALL"))
+            {
+                threadJob(spellOpt10014);
+                FileLog.PrintF("btn_sellStockOff_Click threadJob");
+            }
+            else
+            {
+                String sScrNo = Class1.getClass1Instance().GetEosScrNum();
+                String keyStockCodeLayout = "sRQName:{0}|sTrCode:{1}|sScreenNo:{2}";
+                String keyStockCode = String.Format(keyStockCodeLayout
+                    , sRQName
+                    , sTrCode
+                    , sScrNo
+                );
+                String keyLayout = "sRQName:{0}|sTrCode:{1}|sScreenNo:{2}|stockCode:{3}";
+                String key = String.Format(keyLayout
+                   , sRQName
+                    , sTrCode
+                    , sScrNo
+                    , stockCode
+                );
+                FileLog.PrintF("keyStockCode  ==" + keyStockCode);
+                FileLog.PrintF("key  ==" + key);
+
+                spellOpt10014.stockCode = stockCode;
+                spellOpt10014.key = key;
+                spellOpt10014.sScreenNo = sScrNo;
+                spellOpt10014.reportGubun = "FILE";
+
+                Class1.getClass1Instance().EnqueueByOrderQueue(spellOpt10014);
+                Class1.getClass1Instance().AddSpellDictionary(key, spellOpt10014);
+                Class1.getClass1Instance().AddStockCodeDictionary(keyStockCode, stockCode);
+            }
+        }
+
+        private void btn_dailyDetailTrade_Click(object sender, EventArgs e)
+        {
+            if (IsConnected() == false)
+            {
+                MessageBox.Show("로그인을해주세요");
+                return;
+            }
+            String stockCode = this.tx_stockCode_3.Text.ToString();
+            String startDate = this.tx_startDate_3.Text.ToString();
+            String endDate = this.tx_endDate_3.Text.ToString();
+            String sRQName = "일별거래상세요청";
+            String sTrCode = "OPT10015";
+
+            FileLog.PrintF("btn_dailyDetailTrade_Click stockCode=" + stockCode);
+            FileLog.PrintF("btn_dailyDetailTrade_Click startDate=" + startDate);
+            FileLog.PrintF("btn_dailyDetailTrade_Click endDate=" + endDate);
+
+            OpenApi.Spell.SpellOpt spellOpt10015 = new OpenApi.Spell.SpellOpt();
+            spellOpt10015.sRQNAME = sRQName;
+            spellOpt10015.sTrCode = sTrCode;
+            //spellOpt10015.stockCode = stockCode;
+            spellOpt10015.startDate = startDate;
+            spellOpt10015.endDate = endDate;
+            spellOpt10015.nPrevNext = 0;
+            //spellOpt10015.sScreenNo = sScrNo;
+
+            if (stockCode.Equals("ALL"))
+            {
+                threadJob(spellOpt10015);
+                FileLog.PrintF("btn_dailyDetailTrade_Click threadJob");
+            }
+            else
+            {
+                String sScrNo = Class1.getClass1Instance().GetEosScrNum();
+                String keyStockCodeLayout = "sRQName:{0}|sTrCode:{1}|sScreenNo:{2}";
+                String keyStockCode = String.Format(keyStockCodeLayout
+                    , sRQName
+                    , sTrCode
+                    , sScrNo
+                );
+                String keyLayout = "sRQName:{0}|sTrCode:{1}|sScreenNo:{2}|stockCode:{3}";
+                String key = String.Format(keyLayout
+                   , sRQName
+                    , sTrCode
+                    , sScrNo
+                    , stockCode
+                );
+                FileLog.PrintF("keyStockCode  ==" + keyStockCode);
+                FileLog.PrintF("key  ==" + key);
+
+                spellOpt10015.stockCode = stockCode;
+                spellOpt10015.key = key;
+                spellOpt10015.sScreenNo = sScrNo;
+                spellOpt10015.reportGubun = "FILE";
+
+                Class1.getClass1Instance().EnqueueByOrderQueue(spellOpt10015);
+                Class1.getClass1Instance().AddSpellDictionary(key, spellOpt10015);
+                Class1.getClass1Instance().AddStockCodeDictionary(keyStockCode, stockCode);
+            }
+        }
+
+        private void btn_EOS_Click(object sender, EventArgs e)
+        {
+            if (IsConnected() == false)
+            {
+                MessageBox.Show("로그인을해주세요");
+                return;
+            }
+
+            //1.주식기본정보요청 (당일)
+            String sRQName = "주식기본정보요청";
+            String sTrCode = "OPT10001";
+            String startDate = tx_startDate_EOS.Text;
+            String endDate = tx_endDate_EOS.Text;
+
+            OpenApi.Spell.SpellOpt spellOpt10001 = new OpenApi.Spell.SpellOpt();
+            spellOpt10001.sRQNAME = sRQName;
+            spellOpt10001.sTrCode = sTrCode;
+            spellOpt10001.endDate = endDate;  //안쓰지만 ZIP파일을 만들때 확인해야하므로 넣는다.
+            //spellOpt10060.stockCode = stockCode;
+            spellOpt10001.nPrevNext = 0;
+            //spellOpt10060.sScreenNo = sScrNo;
+
+            threadJob(spellOpt10001);
+            FileLog.PrintF("btn_EOS_Click spellOpt10001 threadJob");
+
+            //2.주식분봉차트조회요청 
+            String tick = "1";//1분봉만 받아서 나머지는 만들자.
+            sRQName = "주식분봉차트조회요청";
+            sTrCode = "OPT10080";
+            
+            OpenApi.Spell.SpellOpt spellOpt10080 = new OpenApi.Spell.SpellOpt();
+            spellOpt10080.sRQNAME = sRQName;
+            spellOpt10080.sTrCode = sTrCode;
+            //spellOpt10080.stockCode = stockCode;
+            spellOpt10080.startDate = startDate; //startDate는 의미가 있다. nPrevNext가 2로 나온다..
+            spellOpt10080.endDate = endDate;   //endDate가 실상의미가 없다... 최근것부터 받으므로..
+            spellOpt10080.tick = tick;
+            spellOpt10080.nPrevNext = 0;
+            //spellOpt10080.sScreenNo = sScrNo;
+            threadJob(spellOpt10080);
+            FileLog.PrintF("btn_EOS_Click spellOpt10080 threadJob");
+            
+            //3.주식기본정보요청
+            sTrCode = "OPT10081";
+            sRQName = "주식일봉차트조회";
+
+            OpenApi.Spell.SpellOpt spellOpt10081 = new OpenApi.Spell.SpellOpt();
+            spellOpt10081.sRQNAME = sRQName;
+            spellOpt10081.sTrCode = sTrCode;
+            //spellOpt10081.stockCode = 종목코드;
+            spellOpt10081.startDate = startDate;
+            spellOpt10081.endDate = endDate;
+            spellOpt10081.nPrevNext = 0;
+            //spellOpt10081.sScreenNo = sScrNo;
+
+            threadJob(spellOpt10081);
+            FileLog.PrintF("btn_EOS_Click OPT10081 threadJob");
+
+            //4.일별거래상세요청
+            sRQName = "일별거래상세요청";
+            sTrCode = "OPT10015";
+
+            OpenApi.Spell.SpellOpt spellOpt10015 = new OpenApi.Spell.SpellOpt();
+            spellOpt10015.sRQNAME = sRQName;
+            spellOpt10015.sTrCode = sTrCode;
+            //spellOpt10015.stockCode = stockCode;
+            spellOpt10015.startDate = startDate;
+            spellOpt10015.endDate = endDate;
+            spellOpt10015.nPrevNext = 0;
+            //spellOpt10015.sScreenNo = sScrNo;
+
+            threadJob(spellOpt10015);
+            FileLog.PrintF("btn_EOS_Click OPT10015 threadJob");
+
+            //5.종목별투자자기관별차트(금액 AND 매수)
+            sRQName = "종목별투자자기관별차트요청_1_1";
+            sTrCode = "OPT10059";
+            OpenApi.Spell.SpellOpt spellOpt10059 = new OpenApi.Spell.SpellOpt();
+            spellOpt10059.sRQNAME = sRQName;
+            spellOpt10059.sTrCode = sTrCode;
+            //spellOpt10060.stockCode = stockCode;
+            spellOpt10059.startDate = startDate;
+            spellOpt10059.endDate = endDate;
+            spellOpt10059.nPrevNext = 0;
+            spellOpt10059.priceOrAmount = "1";
+            spellOpt10059.buyOrSell = "1";
+            //spellOpt10060.sScreenNo = sScrNo;
+            threadJob(spellOpt10059);
+            FileLog.PrintF("btn_EOS_Click OPT10059 금액 AND 매수  threadJob");
+            //5.종목별투자자기관별차트(금액 AND 매도)
+            sRQName = "종목별투자자기관별차트요청_1_2";
+            spellOpt10059 = new OpenApi.Spell.SpellOpt();
+            spellOpt10059.sRQNAME = sRQName;
+            spellOpt10059.sTrCode = sTrCode;
+            //spellOpt10060.stockCode = stockCode;
+            spellOpt10059.startDate = startDate;
+            spellOpt10059.endDate = endDate;
+            spellOpt10059.nPrevNext = 0;
+            spellOpt10059.priceOrAmount = "1";
+            spellOpt10059.buyOrSell = "2";
+            //spellOpt10060.sScreenNo = sScrNo;
+            threadJob(spellOpt10059);
+            FileLog.PrintF("btn_EOS_Click OPT10059 금액 AND 매도  threadJob");
+            //3.종목별투자자기관별차트(수량 AND 매수)
+            sRQName = "종목별투자자기관별차트요청_2_1";
+            spellOpt10059 = new OpenApi.Spell.SpellOpt();
+            spellOpt10059.sRQNAME = sRQName;
+            spellOpt10059.sTrCode = sTrCode;
+            //spellOpt10060.stockCode = stockCode;
+            spellOpt10059.startDate = startDate;
+            spellOpt10059.endDate = endDate;
+            spellOpt10059.nPrevNext = 0;
+            spellOpt10059.priceOrAmount = "2";
+            spellOpt10059.buyOrSell = "1";
+            //spellOpt10060.sScreenNo = sScrNo;
+            threadJob(spellOpt10059);
+            FileLog.PrintF("btn_EOS_Click OPT10059 수량 AND 매수  threadJob");
+
+            //5.종목별투자자기관별차트(수량 AND 매도)
+            sRQName = "종목별투자자기관별차트요청_2_2";
+            spellOpt10059 = new OpenApi.Spell.SpellOpt();
+            spellOpt10059.sRQNAME = sRQName;
+            spellOpt10059.sTrCode = sTrCode;
+            //spellOpt10060.stockCode = stockCode;
+            spellOpt10059.startDate = startDate;
+            spellOpt10059.endDate = endDate;
+            spellOpt10059.nPrevNext = 0;
+            spellOpt10059.priceOrAmount = "2";
+            spellOpt10059.buyOrSell = "2";
+            //spellOpt10060.sScreenNo = sScrNo;
+            threadJob(spellOpt10059);
+            FileLog.PrintF("btn_EOS_Click OPT10059 수량 AND 매도  threadJob");
 
 
-                int nRet = axKHOpenAPI.CommRqData(sRQName, sTrCode, 0, sScrNo);
+            //5.공매도추이요청
+            sRQName = "공매도추이요청";
+            sTrCode = "OPT10014";
 
-                if (Error.IsError(nRet))
+            OpenApi.Spell.SpellOpt spellOpt10014 = new OpenApi.Spell.SpellOpt();
+            spellOpt10014.sRQNAME = sRQName;
+            spellOpt10014.sTrCode = sTrCode;
+            //spellOpt10060.stockCode = stockCode;
+            spellOpt10014.startDate = startDate;
+            spellOpt10014.endDate = endDate;
+            spellOpt10014.nPrevNext = 0;
+            //spellOpt10060.sScreenNo = sScrNo;
+
+            threadJob(spellOpt10014);
+            FileLog.PrintF("btn_EOS_Click OPT10014 threadJob");
+                        
+            //EOS 가 다돌고 파일을 압축할수있도록
+            class1.iEOS = 1;
+            class1.endDateEos = endDate;
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            class1.endDateEos = this.tx_endDate_EOS.Text.ToString();
+            class1.iEOS = 1;
+            class1.EOS_CompressZip();
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            var confirmation = MessageBox.Show("종료되려나?", "Confirm", MessageBoxButtons.YesNo);
+            if (confirmation == System.Windows.Forms.DialogResult.No)
+            {
+                e.Cancel = true; //Even cancelled, form will not get closed now
+            }
+        }
+
+        private void Form1_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            class1.ClosedAll();
+            FileLog.PrintF("Form1_FormClosed Form_Closed");
+        }
+
+        private void btn_pushFtp_Click(object sender, EventArgs e)
+        {
+            class1.PushFtpZipFiles();
+        }
+
+        String strRealType = "0";
+
+        private void btn_setRealData_Click(object sender, EventArgs e)
+        {
+            if (IsConnected() == false)
+            {
+                MessageBox.Show("로그인을해주세요");
+                return;
+            }
+            /*
+            SetRealReg(LPCTSTR strScreenNo, LPCTSTR strCodeList, LPCTSTR strFidList, LPCTSTR strRealType)
+            설명 실시간 등록을 한다.
+            입력값
+            strScreenNo – 실시간 등록할 화면 번호
+            strCodeList – 실시간 등록할 종목코드(복수종목가능 – “종목1;종목2;종목3;….”)
+            strFidList – 실시간 등록할 FID(“FID1;FID2;FID3;…..”)
+            strRealType – “0”, “1” 타입
+            반환값 통신결과
+            비고
+            strRealType이 “0” 으로 하면 같은화면에서 다른종목 코드로 실시간 등록을 하게 되면
+            마지막에 사용한 종목코드만 실시간 등록이 되고 기존에 있던 종목은 실시간이 자동 해
+            지됨.
+            “1”로 하면 같은화면에서 다른 종목들을 추가하게 되면 기존에 등록한 종목도 함께 실
+            시간 시세를 받을 수 있음.
+            꼭 같은
+            */
+
+
+            String strScreenNo = class1.GetEosScrNum();
+            //String strCodeList = "181710;035420;035720";
+            String strCodeList = this.tx_stockCodeReal.Text.ToString().Trim();
+            /*String strFidList = "현재가(10);";*/
+            String strFidList = this.tx_fid.Text.ToString().Trim();
+            /*112405	-51000	-300	-0.58	-51100	-51000	-6	41414	2121	 51300	+51700	-50900	5	-109963	-5515337950	-27.36	0.21	169	91.79	9978	2	0	000000	000000*/
+
+            //strRealType = "0";  /*설명서에는 0,1로 나와있는데 ... 처음엔 0으로 한번 지나고 나면 1로. */
+            /*알아보니
+            주식시세하고 주식체결 하고 별반 차이가 없는것으로.. 주식체결은 빈번하고 주식시세는 좀처럼 발생안한다고 한다.
+            SetRealReg 함수의 인자로 "주식시세" 타입에 속해있는 FID 들을 입력하셨다면 "주식시세" 타입의 실시간데이터가 OnReceiveRealData로 수신됩니다. 체결없이 현재가가 갱신되는 경우 "주식시세" 타입이 발생하여 체결로서 발생되는 "주식체결" 타입보다는 빈도수가 훨씬 적게 수신되니 참고해주시기 바랍니다. 
+            ----------------------------------------------------------------------------------------------
+            전종목을 실시간으로 보아도 문제가 없다???
+            안녕하세요~? 
+            엄격히는 실시간 "주식 시세" 와 실시간 "주식 체결" 과는 조금 다른데요.. 
+            아마 질문 하시는 의도가 "주식 체결" 을 뜻하는거 같습니다. 
+            최대 1개의 화면번호에서 100개 까지 요청 가능 합니다. 
+            더 필요하면 화면번호를 늘리면 되겠습니다.(물론 사용할수 있는 화면번호의 갯수의 제한이 있습니다.) 
+            실시간 주식 체결 데이터에서는 매도 체결인지 매수 체결인지 구분 가능합니다. 
+            관련 FID를 쭉 찍어 보시면 확인 가능하고 매수체결인지 매도체결인지에 따라 값앞에 +/- 기호가 붙기도 합니다. 
+            그럼 좀 급해보이시는거 같아 영자님 출몰하시기 전에 미리 답해드립니다. 
+            */
+            FileLog.PrintF("btn_setRealData_Click strScreenNo=>"+ strScreenNo);
+            FileLog.PrintF("btn_setRealData_Click strCodeList=>" + strCodeList);
+            FileLog.PrintF("btn_setRealData_Click strFidList=>" + strFidList);
+            FileLog.PrintF("btn_setRealData_Click strRealType=>" + strRealType);
+            axKHOpenAPI.SetRealReg(strScreenNo, strCodeList, strFidList, strRealType);
+            strRealType= "1";
+
+        }
+
+        private void btn_getStockDataToDay_Click(object sender, EventArgs e)
+        {
+            if (IsConnected() == false)
+            {
+                MessageBox.Show("로그인을해주세요");
+                return;
+            }
+            String stockCode = this.tx_stockCode_5.Text.ToString();
+            String sRQName = "주식기본정보요청";
+            String sTrCode = "OPT10001";
+
+            FileLog.PrintF("btn_getStockDataToDay_Click stockCode=" + stockCode);
+
+            OpenApi.Spell.SpellOpt spellOpt10001 = new OpenApi.Spell.SpellOpt();
+            spellOpt10001.sRQNAME = sRQName;
+            spellOpt10001.sTrCode = sTrCode;
+            //spellOpt10060.stockCode = stockCode;
+            spellOpt10001.nPrevNext = 0;
+            //spellOpt10060.sScreenNo = sScrNo;
+
+            if (stockCode.Equals("ALL"))
+            {
+                threadJob(spellOpt10001);
+                FileLog.PrintF("btn_getStockDataToDay_Click threadJob");
+            }
+            else
+            {
+                String sScrNo = Class1.getClass1Instance().GetEosScrNum();
+                String keyStockCodeLayout = "sRQName:{0}|sTrCode:{1}|sScreenNo:{2}";
+                String keyStockCode = String.Format(keyStockCodeLayout
+                    , sRQName
+                    , sTrCode
+                    , sScrNo
+                );
+                String keyLayout = "sRQName:{0}|sTrCode:{1}|sScreenNo:{2}|stockCode:{3}";
+                String key = String.Format(keyLayout
+                   , sRQName
+                    , sTrCode
+                    , sScrNo
+                    , stockCode
+                );
+                FileLog.PrintF("keyStockCode  ==" + keyStockCode);
+                FileLog.PrintF("key  ==" + key);
+
+                spellOpt10001.stockCode = stockCode;
+                spellOpt10001.key = key;
+                spellOpt10001.sScreenNo = sScrNo;
+                spellOpt10001.reportGubun = "FILE";
+
+                Class1.getClass1Instance().EnqueueByOrderQueue(spellOpt10001);
+                Class1.getClass1Instance().AddSpellDictionary(key, spellOpt10001);
+                Class1.getClass1Instance().AddStockCodeDictionary(keyStockCode, stockCode);
+            }
+        }
+
+        private void btn_getStockDataMinute_Click(object sender, EventArgs e)
+        {
+            if (IsConnected() == false)
+            {
+                MessageBox.Show("로그인을해주세요");
+                return;
+            }
+            String stockCode = this.tx_stockCode_6.Text.ToString();
+            String startDate = this.tx_startDate_6.Text.ToString();
+            String tick = this.tx_tick_6.Text.ToString();
+            String sRQName = "주식분봉차트조회요청";
+            String sTrCode = "OPT10080";
+
+            FileLog.PrintF("btn_getStockDataMinute_Click stockCode=" + stockCode);
+            FileLog.PrintF("btn_getStockDataMinute_Click startDate=" + startDate);
+            FileLog.PrintF("btn_getStockDataMinute_Click tick=" + tick);
+
+            OpenApi.Spell.SpellOpt spellOpt10080 = new OpenApi.Spell.SpellOpt();
+            spellOpt10080.sRQNAME = sRQName;
+            spellOpt10080.sTrCode = sTrCode;
+            //spellOpt10015.stockCode = stockCode;
+            spellOpt10080.startDate = startDate;
+            spellOpt10080.tick = tick;
+            spellOpt10080.nPrevNext = 0;
+            //spellOpt10015.sScreenNo = sScrNo;
+
+            if (stockCode.Equals("ALL"))
+            {
+                threadJob(spellOpt10080);
+                FileLog.PrintF("btn_getStockDataMinute_Click threadJob");
+            }
+            else
+            {
+                String sScrNo = Class1.getClass1Instance().GetEosScrNum();
+                String keyStockCodeLayout = "sRQName:{0}|sTrCode:{1}|sScreenNo:{2}";
+                String keyStockCode = String.Format(keyStockCodeLayout
+                    , sRQName
+                    , sTrCode
+                    , sScrNo
+                );
+                String keyLayout = "sRQName:{0}|sTrCode:{1}|sScreenNo:{2}|stockCode:{3}";
+                String key = String.Format(keyLayout
+                   , sRQName
+                    , sTrCode
+                    , sScrNo
+                    , stockCode
+                );
+                FileLog.PrintF("keyStockCode  ==" + keyStockCode);
+                FileLog.PrintF("key  ==" + key);
+
+                spellOpt10080.stockCode = stockCode;
+                spellOpt10080.key = key;
+                spellOpt10080.sScreenNo = sScrNo;
+                spellOpt10080.reportGubun = "FILE";
+
+                Class1.getClass1Instance().EnqueueByOrderQueue(spellOpt10080);
+                Class1.getClass1Instance().AddSpellDictionary(key, spellOpt10080);
+                Class1.getClass1Instance().AddStockCodeDictionary(keyStockCode, stockCode);
+            }
+        }
+
+        private void btn_removeRealData_Click(object sender, EventArgs e)
+        {
+            if (IsConnected() == false)
+            {
+                MessageBox.Show("로그인을해주세요");
+                return;
+            }
+        }
+
+        private void btn_GetEstimationProperty_Click(object sender, EventArgs e)
+        {
+            if (IsConnected() == false)
+            {
+                MessageBox.Show("로그인을해주세요");
+                return;
+            }
+            String accountNum = this.tx_accountNum_1.Text.ToString();
+            String password = this.tx_password_1.Text.ToString();
+            String sRQName = "추정자산조회요청";
+            String sTrCode = "OPW00003";
+
+            FileLog.PrintF("btn_GetEstimationProperty_Click accountNum=" + accountNum);
+            FileLog.PrintF("btn_GetEstimationProperty_Click password=" + password);
+
+            OpenApi.Spell.SpellOpt spellOpw00003 = new OpenApi.Spell.SpellOpt();
+            spellOpw00003.sRQNAME = sRQName;
+            spellOpw00003.sTrCode = sTrCode;
+            spellOpw00003.accountNum = accountNum;
+            spellOpw00003.password = password;
+            
+
+            String sScrNo = Class1.getClass1Instance().GetAnyTimeScrNum();
+            String keyStockCodeLayout = "sRQName:{0}|sTrCode:{1}|sScreenNo:{2}";
+            String keyStockCode = String.Format(keyStockCodeLayout
+                , sRQName
+                , sTrCode
+                , sScrNo
+            );
+            String keyLayout = "sRQName:{0}|sTrCode:{1}|sScreenNo:{2}|accountNum:{3}";
+            String key = String.Format(keyLayout
+               , sRQName
+                , sTrCode
+                , sScrNo
+                , accountNum
+            );
+            spellOpw00003.sScreenNo = sScrNo;
+            FileLog.PrintF("keyStockCode  ==" + keyStockCode);
+
+            Class1.getClass1Instance().AddSpellDictionary(key, spellOpw00003);
+            Class1.getClass1Instance().AddStockCodeDictionary(keyStockCode, accountNum);
+            //QUEUE를 따지 않고 바로 실행되어야 한다.
+            ReceiveTrDataFactory rtf = ReceiveTrDataFactory.getClass1Instance();
+            ReceiveTrData.ReceiveTrData rt = rtf.getReceiveTrData(spellOpw00003.sTrCode);
+            int nRet = rt.Run(axKHOpenAPI, spellOpw00003);
+            spellOpw00003.startRunTime = DateTime.Now;
+
+        }
+
+        private void btn_GetAccountEarningsRate_Click(object sender, EventArgs e)
+        {
+            if (IsConnected() == false)
+            {
+                MessageBox.Show("로그인을해주세요");
+                return;
+            }
+            String accountNum = this.tx_accountNum_2.Text.ToString();
+            String sRQName = "계좌수익률요청";
+            String sTrCode = "OPT10085";
+
+            FileLog.PrintF("btn_GetAccountEarningsRate_Click accountNum=" + accountNum);
+
+            OpenApi.Spell.SpellOpt spellOpt10085 = new OpenApi.Spell.SpellOpt();
+            spellOpt10085.sRQNAME = sRQName;
+            spellOpt10085.sTrCode = sTrCode;
+            spellOpt10085.accountNum = accountNum;
+
+            String sScrNo = Class1.getClass1Instance().GetAnyTimeScrNum();
+            String keyStockCodeLayout = "sRQName:{0}|sTrCode:{1}|sScreenNo:{2}";
+            String keyStockCode = String.Format(keyStockCodeLayout
+                , sRQName
+                , sTrCode
+                , sScrNo
+            );
+            String keyLayout = "sRQName:{0}|sTrCode:{1}|sScreenNo:{2}|accountNum:{3}";
+            String key = String.Format(keyLayout
+               , sRQName
+                , sTrCode
+                , sScrNo
+                , accountNum
+            );
+            spellOpt10085.sScreenNo = sScrNo;
+            FileLog.PrintF("keyStockCode  ==" + keyStockCode);
+
+            Class1.getClass1Instance().AddSpellDictionary(key, spellOpt10085);
+            Class1.getClass1Instance().AddStockCodeDictionary(keyStockCode, accountNum);
+            //QUEUE를 따지 않고 바로 실행되어야 한다.
+            ReceiveTrDataFactory rtf = ReceiveTrDataFactory.getClass1Instance();
+            ReceiveTrData.ReceiveTrData rt = rtf.getReceiveTrData(spellOpt10085.sTrCode);
+            int nRet = rt.Run(axKHOpenAPI, spellOpt10085);
+            spellOpt10085.startRunTime = DateTime.Now;
+        }
+
+        private void btn_GetConditionNameList_Click(object sender, EventArgs e)
+        {
+            if (IsConnected() == false)
+            {
+                MessageBox.Show("로그인을해주세요");
+                return;
+            }
+            axKHOpenAPI.GetConditionLoad();
+
+        }
+
+        private void btn_sendCondition_Click(object sender, EventArgs e)
+        {
+            /*
+            :BOOL SendCondition(LPCTSTR strScrNo, LPCTSTR strConditionName, int nIndex, int nSearch);
+            -반환값 : FALSE(실패), TRUE(성공)
+            - 파라메터 설명
+             strScrNo : 화면번호
+             strConditionName :GetConditionNameList()로 불러온 조건명중 하나의 조건명.
+             nIndex : GetCondionNameList()로 불러온 조건인덱스.
+             nSearch : 일반조회(0), 실시간조회(1), 연속조회(2)
+            nSearch 를 0으로 조회하면 단순 해당 조건명(식)에 맞는 종목리스트를 받아올 수 있습니다. 
+            1로 조회하면 해당 조건명(식)에 맞는 종목리스트를 받아 오면서 실시간으로 편입, 이탈하는 종목을 받을 수 있는 조건이 됩니다.
+            - 1번으로 조회 할 수 있는 화면 개수는 최대 10개까지 입니다.
+            - 2은 OnReceiveTrCondition 이벤트 함수에서 마지막 파라메터인 nNext가 “2”로들어오면 종목이 더 있기 때문에 
+            다음 조회를 원할 때 OnReceiveTrCondition 이벤트 함수에서 사용하시면 됩니다.
+            인덱스1^조건명1;인덱스2^조건명2;인덱스3^조건명3;…
+            */
+            String strConditionName = this.tx_conditionName.Text.ToString();
+            int nIndex = Int32.Parse(this.tx_index.Text.ToString());
+            String sScrNo = Class1.getClass1Instance().GetAnyTimeScrNum();
+            FileLog.PrintF("btn_sendCondition_Click strConditionName=>" + strConditionName);
+            FileLog.PrintF("btn_sendCondition_Click nIndex=>" + nIndex);
+            FileLog.PrintF("btn_sendCondition_Click sScrNo=>" + sScrNo);
+            axKHOpenAPI.SendCondition(sScrNo, strConditionName, nIndex, 0);
+        }
+
+        private void btn_SendOrder_Click(object sender, EventArgs e)
+        {
+            /*
+            LONG SendOrder(BSTR sRQName,BSTR sScreenNo,BSTR sAccNo,LONG nOrderType,BSTR sCode,LONG nQty,LONG nPrice,BSTR sHogaGb,BSTR sOrgOrderNo)
+                설명 주식 주문을 서버로 전송한다.
+                입력값
+                sRQName - 사용자 구분 요청 명
+                sScreenNo - 화면번호[4]
+                sAccNo - 계좌번호[10]
+                nOrderType - 주문유형(1:신규매수, 2:신규매도, 3:매수취소, 4:매도취소, 5:매수정정, 6:매도정정)
+                sCode, -주식종목코드
+                nQty – 주문수량
+                nPrice – 주문단가
+                sHogaGb - 거래구분
+                sOrgOrderNo – 원주문번호
+                반환값 에러코드 < 4.에러코드표 참고 >
+                비고
+                sHogaGb – 00:지정가, 03:시장가, 05:조건부지정가, 06:최유리지정가, 07:최우선지정가, 10:지정가IOC, 13:시장가IOC, 16:최유리IOC, 20:지정가FOK, 23:시장가FOK, 26:최유리FOK, 61:시간외단일가매매, 81:시간외종가
+                ex) 지정가 매수 -openApi.SendOrder(“RQ_1”, “0101”, “5015123410”, 1, “000660”, 10, 48500,“0”, “”);
+                    시장가 매수 -openApi.SendOrder(“RQ_1”, “0101”, “5015123410”, 1, “000660”, 10, 0, “3”,“”);
+                    매수 정정 -openApi.SendOrder(“RQ_1”,“0101”, “5015123410”, 5, “000660”, 10, 49500,“0”, “1”);
+                    매수 취소 -openApi.SendOrder(“RQ_1”, “0101”, “5015123410”, 3, “000660”, 10, “0”, “2”);
+            */
+
+            if (IsConnected() == false)
+            {
+                MessageBox.Show("로그인을해주세요");
+                return;
+            }
+
+            String sScreenNo = Class1.getClass1Instance().GetAnyTimeScrNum();
+            String accountNumber = this.tx_accountNum_3.Text.ToString().Trim();
+            int nOrderType = int.Parse(this.cb_SendOrderNOrderType.SelectedValue.ToString());
+            String sCode =this.tx_sCode.Text.ToString().Trim();
+            int nQty = int.Parse(this.tx_nQty.Text.ToString().Trim());
+            int nPrice = int.Parse(this.tx_nPrice.Text.ToString().Trim());
+            String sHogaGb = this.cb_SendOrderSHogaGb.SelectedValue.ToString();
+            String sOrgOrderNo = this.tx_sOrgOrderNo.Text.ToString().Trim();
+
+
+            FileLog.PrintF("btn_SendOrder_Click sScreenNo=>" + sScreenNo);
+            FileLog.PrintF("btn_SendOrder_Click accountNumber=>" + accountNumber);
+            FileLog.PrintF("btn_SendOrder_Click nOrderType=>" + nOrderType);
+            FileLog.PrintF("btn_SendOrder_Click sCode=>" + sCode);
+            FileLog.PrintF("btn_SendOrder_Click nQty=>" + nQty);
+            FileLog.PrintF("btn_SendOrder_Click nPrice=>" + nPrice);
+            FileLog.PrintF("btn_SendOrder_Click sHogaGb=>" + sHogaGb);
+            FileLog.PrintF("btn_SendOrder_Click sOrgOrderNo=>" + sOrgOrderNo);
+
+
+           int ret= axKHOpenAPI.SendOrder("주문", sScreenNo, accountNumber, nOrderType, sCode, nQty, nPrice, sHogaGb, sOrgOrderNo);
+
+            FileLog.PrintF("btn_SendOrder_Click ret=>" + ret);
+
+        }
+
+ 
+
+        private void btn_AutoSell(object sender, EventArgs e)
+        {
+            if (IsConnected() == false)
+            {
+                MessageBox.Show("로그인을해주세요");
+                return;
+            }
+            String accountNumber = this.tx_accountNum_4.Text.ToString().Trim();
+            int profit_rate = int.Parse(this.tx_profit_rate.Text.ToString().Trim());
+            int loss_rate = int.Parse(this.tx_profit_rate.Text.ToString().Trim());
+            Boolean loss_status = false;
+            foreach (Control control in this.손절매활성화여부.Controls)
+            {
+                if (control is RadioButton)
                 {
-                    Logger(Log.일반, "[OPT10060] : " + Error.GetErrorMessage());
-                }
-                else
-                {
-                    Logger(Log.에러, "[OPT10060] : " + Error.GetErrorMessage());
+                    RadioButton radio = control as RadioButton;
+                    if (radio.Checked)
+                    {
+                        String tmp= radio.Tag.ToString();
+                        if (tmp.ToString().Trim().Equals("1"))
+                        {
+                            loss_status = true;
+                        } else
+                        {
+                            loss_status = false;
+                        }
+                    }
                 }
             }
 
+            Boolean profit_status = false;
+            foreach (Control control in this.이익매활성화여부.Controls)
+            {
+                if (control is RadioButton)
+                {
+                    RadioButton radio = control as RadioButton;
+                    if (radio.Checked)
+                    {
+                        String tmp = radio.Tag.ToString();
+                        if (tmp.ToString().Trim().Equals("1"))
+                        {
+                            profit_status = true;
+                        }
+                        else
+                        {
+                            profit_status = false;
+                        }
+                    }
+                }
+            }
 
+            if (loss_status == true)
+            {
+                lb_lossStatus.BackColor = Color.GreenYellow;
+                lb_lossStatus.Text = "손절매ON";
+            } else {
+                lb_lossStatus.BackColor = Color.Gray;
+                lb_lossStatus.Text = "손절매OFF";
+            }
+
+            if (profit_status == true)
+            {
+                lb_profitStatus.BackColor = Color.GreenYellow;
+                lb_profitStatus.Text = "이익매ON";
+            }
+            else {
+                lb_profitStatus.BackColor = Color.Gray;
+                lb_profitStatus.Text = "이익매ON";
+            }
+
+            MyStock.getClass1Instance().profit_rate = profit_rate;
+            MyStock.getClass1Instance().loss_rate = loss_rate;
+            MyStock.getClass1Instance().loss_status = loss_status;
+            MyStock.getClass1Instance().profit_status = profit_status;
+            MyStock.getClass1Instance().accountNumber = accountNumber;
+        }
+
+        private void btn_SearchContractStatus_Click(object sender, EventArgs e)
+        {
+            String accountNum = this.tx_accountNum_5.Text.ToString().Trim();
+            String orderStatus = this.tx_orderStatus.Text.ToString().Trim();  //체결구분 0:전체 ,1:미체결
+            String orderGubun = this.tx_orderGubun.Text.ToString().Trim(); //매매구분 0:전체,  1:매도, 2:매수
+
+            String sRQName= "실시간미체결요청";
+            String sTrCode = "OPT10075";
+
+            OpenApi.Spell.SpellOpt spellOpt10075 = new OpenApi.Spell.SpellOpt();
+            spellOpt10075.sRQNAME = sRQName;
+            spellOpt10075.sTrCode = sTrCode;
+            spellOpt10075.accountNum = accountNum;
+            spellOpt10075.orderStatus = orderStatus;
+            spellOpt10075.orderGubun = orderGubun;
+
+
+            String sScrNo = Class1.getClass1Instance().GetAnyTimeScrNum();
+            String keyStockCodeLayout = "sRQName:{0}|sTrCode:{1}|sScreenNo:{2}";
+            String keyStockCode = String.Format(keyStockCodeLayout
+                , sRQName
+                , sTrCode
+                , sScrNo
+            );
+            String keyLayout = "sRQName:{0}|sTrCode:{1}|sScreenNo:{2}|accountNum:{3}";
+            String key = String.Format(keyLayout
+               , sRQName
+                , sTrCode
+                , sScrNo
+                , accountNum
+            );
+            spellOpt10075.sScreenNo = sScrNo;
+            FileLog.PrintF("keyStockCode  ==" + keyStockCode);
+
+            Class1.getClass1Instance().AddSpellDictionary(key, spellOpt10075);
+            Class1.getClass1Instance().AddStockCodeDictionary(keyStockCode, accountNum);
+
+
+            ReceiveTrDataFactory rtf = ReceiveTrDataFactory.getClass1Instance();
+            ReceiveTrData.ReceiveTrData rt = rtf.getReceiveTrData(spellOpt10075.sTrCode);
+            int nRet = rt.Run(axKHOpenAPI, spellOpt10075);
+            spellOpt10075.startRunTime = DateTime.Now;
         }
     }
-
 }

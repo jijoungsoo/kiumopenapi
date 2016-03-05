@@ -22,6 +22,20 @@ namespace OpenApi.rubyreceive {
         // CODEGEN: 작업에 여러 개의 반환 값이 있기 때문에 메시지 계약을 생성하는 중입니다.
         [System.ServiceModel.OperationContractAttribute(Action="receive_opt10081", ReplyAction="*")]
         System.Threading.Tasks.Task<OpenApi.rubyreceive.receive_opt10081Response> receive_opt10081Async(OpenApi.rubyreceive.receive_opt10081Request request);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="receive_opw00003", ReplyAction="*")]
+        [System.ServiceModel.XmlSerializerFormatAttribute(Style=System.ServiceModel.OperationFormatStyle.Rpc, SupportFaults=true, Use=System.ServiceModel.OperationFormatUse.Encoded)]
+        void receive_opw00003(string value);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="receive_opw00003", ReplyAction="*")]
+        System.Threading.Tasks.Task receive_opw00003Async(string value);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="receive_opt10085", ReplyAction="*")]
+        [System.ServiceModel.XmlSerializerFormatAttribute(Style=System.ServiceModel.OperationFormatStyle.Rpc, SupportFaults=true, Use=System.ServiceModel.OperationFormatUse.Encoded)]
+        void receive_opt10085(string value);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="receive_opt10085", ReplyAction="*")]
+        System.Threading.Tasks.Task receive_opt10085Async(string value);
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
@@ -97,6 +111,22 @@ namespace OpenApi.rubyreceive {
         
         public System.Threading.Tasks.Task<OpenApi.rubyreceive.receive_opt10081Response> receive_opt10081Async(OpenApi.rubyreceive.receive_opt10081Request request) {
             return base.Channel.receive_opt10081Async(request);
+        }
+        
+        public void receive_opw00003(string value) {
+            base.Channel.receive_opw00003(value);
+        }
+        
+        public System.Threading.Tasks.Task receive_opw00003Async(string value) {
+            return base.Channel.receive_opw00003Async(value);
+        }
+        
+        public void receive_opt10085(string value) {
+            base.Channel.receive_opt10085(value);
+        }
+        
+        public System.Threading.Tasks.Task receive_opt10085Async(string value) {
+            return base.Channel.receive_opt10085Async(value);
         }
     }
 }

@@ -6,15 +6,19 @@ using System.Threading.Tasks;
 using System.Threading;
 using KiwoomCode;
 using System.Collections.Concurrent;
+using System.IO;
 
 namespace OpenApi
 {
     class FileLog
     {
-        private static string path = System.Reflection.Assembly.GetExecutingAssembly().Location;
+        private static readonly string path = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+        //private static FileInfo fileInfo = new FileInfo(System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + "\\log.log");
         private static readonly object locker = new object();
         public static void PrintF(String line)
         {
+            String day = DateTime.Now.ToString("yyyyMMdd");
+            FileInfo fileInfo = new FileInfo(path + "\\log_"+ day + ".log");
             //   Console.WriteLine("PrintF");
             /*
             음 이것도.. UI 쓰레드에서 돌리면 부하가 걸리는구나..
@@ -24,13 +28,19 @@ namespace OpenApi
             */
             lock (locker)
             {
+                /*
                 String tmp1 = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
                 line = "[" + tmp1 + "]" + line;
-                path = System.IO.Path.GetDirectoryName(path);
-                path = path + "\\log.log";
                 System.IO.StreamWriter file = new System.IO.StreamWriter(path, true);
                 file.WriteLine(line);
                 file.Close();
+                */
+                String tmp1 = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                line = "[" + tmp1 + "]" + line;
+                using (StreamWriter FileWriter = fileInfo.AppendText())
+                {
+                    FileWriter.WriteLine(line);
+                }
             }
 
             /* 오히려 쓰레드가 더 느리네.. 쓰레드 삭제.
@@ -71,11 +81,7 @@ namespace OpenApi
             }
             PrintF(message);
         }
-
         
-
-        
-
         public static void alert(String message)
         {
             System.Windows.Forms.MessageBox.Show(message);

@@ -229,6 +229,15 @@ namespace WcfServiceLibrary
         [OperationContract]
         String GetBranchCodeName();
 
+        /// <summary>
+        ///[52] 설명 조건검색 조건명 리스트를 받아온다.
+        ///반환값 조건명 리스트(조건명^인덱스)
+        ///비고 조건명 리스트를 구분(“;”)하여 받아온다.Ex) 인덱스1^조건명1;인덱스2^조건명2;인덱스3^조건명3;…
+        /// </summary>
+        /// [OperationContract]
+        String GetConditionNameList();
+        
+
 
         /// <summary>
         ///[101] 설명 주식 일일 데이터를 주식이 생성된 일부터 받아온다.
@@ -241,6 +250,31 @@ namespace WcfServiceLibrary
         [OperationContract]
         [WebInvoke(BodyStyle = WebMessageBodyStyle.Wrapped)]
         String GetOpt10081(String strCode, String startDate, String endDate);
+
+
+        /// <summary>
+        ///[102] 설명 추정자산조회요청
+        ///입력값
+        ///accountNum : 계좌번호10자리
+        ///password : 계좌비밀번호 4자리 모의투자는 0000
+        ////반환값  
+        /// 성공유무 데이터는 onReceived쪽에서 soap로 쏴줌
+        /// </summary>
+        [OperationContract]
+        [WebInvoke(BodyStyle = WebMessageBodyStyle.Wrapped)]
+        String GetOpw00003(String accountNum,String password);
+
+        /// <summary>
+        ///[103] 설명 계좌수익률요청
+        ///입력값
+        ///accountNum : 계좌번호10자리
+        ////반환값  
+        /// 성공유무 데이터는 onReceived쪽에서 soap로 쏴줌
+        /// </summary>
+        [OperationContract]
+        [WebInvoke(BodyStyle = WebMessageBodyStyle.Wrapped)]
+        String GetOpt10085(String accountNum);
+
     }
 
 }

@@ -8,6 +8,7 @@ using OpenApi;
 using AxKHOpenAPILib;
 using KiwoomCode;
 using System.Threading;
+using OpenApi.ReceiveTrData;
 
 namespace WcfServiceLibrary
 {
@@ -47,7 +48,7 @@ namespace WcfServiceLibrary
         {
             //035420   <--네이버종목번호\
             this.axKHOpenAPI.SetInputValue("종목코드", 종목코드);
-            int nRet = axKHOpenAPI.CommRqData("주식기본정보", "OPT10001", 0, class2.GetScrNum());
+            int nRet = axKHOpenAPI.CommRqData("주식기본정보", "OPT10001", 0, class2.GetEosScrNum());
 
             return "sdfsdf:";
 
@@ -1125,7 +1126,7 @@ namespace WcfServiceLibrary
             */
             //Class1.getClass1Instance().waitOneOpt10081();// 멈추기..
             
-            String sScreenNo = Class1.getClass1Instance().GetScrNum();
+            String sScreenNo = Class1.getClass1Instance().GetEosScrNum();
             String sRQName = "주식일봉차트조회";
             String sTrCode = "OPT10081";
             int nPrevNext = 0;
@@ -1147,7 +1148,7 @@ namespace WcfServiceLibrary
             FileLog.PrintF("keyStockCode  ==" + keyStockCode);
             FileLog.PrintF("key  ==" + key);
 
-            OpenApi.Spell.spellOpt spellOpt10081 = new OpenApi.Spell.spellOpt();
+            OpenApi.Spell.SpellOpt spellOpt10081 = new OpenApi.Spell.SpellOpt();
             spellOpt10081.sRQNAME = sRQName;
             spellOpt10081.sTrCode = sTrCode;
             spellOpt10081.stockCode = strCode;
@@ -1180,6 +1181,120 @@ namespace WcfServiceLibrary
       }
 
 
+        /// <summary>
+        ///[102] 설명 추정자산조회요청
+        ///입력값
+        ///accountNum : 계좌번호10자리
+        ///password : 계좌비밀번호 4 자리모의투자는 0000
+        ////반환값  
+        /// 성공유무 데이터는 onReceived쪽에서 soap로 쏴줌
+        /// </summary>
+        public String GetOpw00003(String accountNum,String password)
+        {
+            String sRQName = "추정자산조회요청";
+            String sTrCode = "OPW00003";
+
+            FileLog.PrintF("WCF GetOpt00003 accountNum=" + accountNum);
+            FileLog.PrintF("WCF GetOpt00003 password=" + password);
+
+            OpenApi.Spell.SpellOpt spellOpw00003 = new OpenApi.Spell.SpellOpt();
+            spellOpw00003.sRQNAME = sRQName;
+            spellOpw00003.sTrCode = sTrCode;
+            spellOpw00003.accountNum = accountNum;
+            spellOpw00003.password = password;
+
+
+            String sScrNo = Class1.getClass1Instance().GetAnyTimeScrNum();
+            String keyStockCodeLayout = "sRQName:{0}|sTrCode:{1}|sScreenNo:{2}";
+            String keyStockCode = String.Format(keyStockCodeLayout
+                , sRQName
+                , sTrCode
+                , sScrNo
+            );
+            String keyLayout = "sRQName:{0}|sTrCode:{1}|sScreenNo:{2}|accountNum:{3}";
+            String key = String.Format(keyLayout
+               , sRQName
+                , sTrCode
+                , sScrNo
+                , accountNum
+            );
+            spellOpw00003.sScreenNo = sScrNo;
+            FileLog.PrintF("keyStockCode  ==" + keyStockCode);
+
+            Class1.getClass1Instance().AddSpellDictionary(key, spellOpw00003);
+            Class1.getClass1Instance().AddStockCodeDictionary(keyStockCode, accountNum);
+            //QUEUE를 따지 않고 바로 실행되어야 한다.
+            ReceiveTrDataFactory rtf = ReceiveTrDataFactory.getClass1Instance();
+            ReceiveTrData rt = rtf.getReceiveTrData(spellOpw00003.sTrCode);
+            int nRet = rt.Run(axKHOpenAPI, spellOpw00003);
+            spellOpw00003.startRunTime = DateTime.Now;
+
+            if (Error.IsError(nRet))
+            {
+                return "[WCF GetOpw00003][OK]:" + Error.GetErrorMessage();
+            }
+            else
+            {
+                return "[WCF GetOpw00003][NOK]:" + Error.GetErrorMessage();
+            }
+        }
+
+
+        /// <summary>
+        ///[102] 설명 계좌수익률요청
+        ///입력값
+        ///accountNum : 계좌번호10자리
+        ////반환값  
+        /// 성공유무 데이터는 onReceived쪽에서 soap로 쏴줌
+        /// </summary>
+        public String GetOpt10085(String accountNum)
+        {
+            String sRQName = "계좌수익률요청";
+            String sTrCode = "OPT10085";
+
+            FileLog.PrintF("WCF GetOpt10085 accountNum=" + accountNum);
+
+            OpenApi.Spell.SpellOpt spellOpt10085 = new OpenApi.Spell.SpellOpt();
+            spellOpt10085.sRQNAME = sRQName;
+            spellOpt10085.sTrCode = sTrCode;
+            spellOpt10085.accountNum = accountNum;
+
+            String sScrNo = Class1.getClass1Instance().GetAnyTimeScrNum();
+            String keyStockCodeLayout = "sRQName:{0}|sTrCode:{1}|sScreenNo:{2}";
+            String keyStockCode = String.Format(keyStockCodeLayout
+                , sRQName
+                , sTrCode
+                , sScrNo
+            );
+            String keyLayout = "sRQName:{0}|sTrCode:{1}|sScreenNo:{2}|accountNum:{3}";
+            String key = String.Format(keyLayout
+               , sRQName
+                , sTrCode
+                , sScrNo
+                , accountNum
+            );
+            spellOpt10085.sScreenNo = sScrNo;
+            FileLog.PrintF("keyStockCode  ==" + keyStockCode);
+
+            Class1.getClass1Instance().AddSpellDictionary(key, spellOpt10085);
+            Class1.getClass1Instance().AddStockCodeDictionary(keyStockCode, accountNum);
+            //QUEUE를 따지 않고 바로 실행되어야 한다.
+            ReceiveTrDataFactory rtf = ReceiveTrDataFactory.getClass1Instance();
+            ReceiveTrData rt = rtf.getReceiveTrData(spellOpt10085.sTrCode);
+            int nRet = rt.Run(axKHOpenAPI, spellOpt10085);
+            spellOpt10085.startRunTime = DateTime.Now;
+
+            if (Error.IsError(nRet))
+            {
+                return "[WCF GetOpt10085][OK]:" + Error.GetErrorMessage();
+            }
+            else
+            {
+                return "[WCF GetOpt10085][NOK]:" + Error.GetErrorMessage();
+            }
+        }
+
+
 
 
         #region 이벤트
@@ -1203,19 +1318,19 @@ namespace WcfServiceLibrary
         ///sTrCode – CommRqData의 sTrCode과 매핑되는 이름이다.
         /// </summary>
         /// 
-       /*
-        private void axKHOpenAPI_OnReceiveTrData(object sender, AxKHOpenAPILib._DKHOpenAPIEvents_OnReceiveTrDataEvent e)
-        {
-            ///sScrNo – 화면번호
-            ///sRQName – 사용자구분 명
-            ///sTrCode – Tran 명
-            ///sRecordName – Record 명
-            ///sPreNext – 연속조회 유무
-            //////sRQName – CommRqData의 sRQName과 매핑되는 이름이다.
-            ///sTrCode – CommRqData의 sTrCode과 매핑되는 이름이다.
-            ///            
-        }
-        */
+        /*
+         private void axKHOpenAPI_OnReceiveTrData(object sender, AxKHOpenAPILib._DKHOpenAPIEvents_OnReceiveTrDataEvent e)
+         {
+             ///sScrNo – 화면번호
+             ///sRQName – 사용자구분 명
+             ///sTrCode – Tran 명
+             ///sRecordName – Record 명
+             ///sPreNext – 연속조회 유무
+             //////sRQName – CommRqData의 sRQName과 매핑되는 이름이다.
+             ///sTrCode – CommRqData의 sTrCode과 매핑되는 이름이다.
+             ///            
+         }
+         */
 
         /// <summary>
         ///실시간 시세 이벤트

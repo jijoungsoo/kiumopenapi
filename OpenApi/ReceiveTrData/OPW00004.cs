@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using OpenApi.Spell;
+using AxKHOpenAPILib;
 
 namespace OpenApi.ReceiveTrData
 {
@@ -16,23 +18,12 @@ namespace OpenApi.ReceiveTrData
     ///</summary>
     public class OPW00004: ReceiveTrData
     {
-/*
-[OPW00004: 계좌평가현황요청]
-1. Open API 조회 함수 입력값을 설정합니다.
-계좌번호 = 전문 조회할 보유계좌번호
-SetInputValue("계좌번호"	,  "입력값 1");
-비밀번호 = 사용안함(공백)
-SetInputValue("비밀번호"	,  "입력값 2");
-상장폐지조회구분 = 0:전체, 1:상장폐지종목제외
-SetInputValue("상장폐지조회구분"	,  "입력값 3");
-비밀번호입력매체구분 = 00
-SetInputValue("비밀번호입력매체구분"	,  "입력값 4");
-2. Open API 조회 함수를 호출해서 전문을 서버로 전송합니다.
-CommRqData( "RQName"	,  "OPW00004"	,  "0"	,  "화면번호");
-*/
-            
+
+
+        public OPW00004() {
+        }
         private static string path = System.Reflection.Assembly.GetExecutingAssembly().Location;
-        public OPW00004(AxKHOpenAPILib.AxKHOpenAPI axKHOpenAPI, AxKHOpenAPILib._DKHOpenAPIEvents_OnReceiveTrDataEvent e)
+        public override void ReceivedData(AxKHOpenAPILib.AxKHOpenAPI axKHOpenAPI, AxKHOpenAPILib._DKHOpenAPIEvents_OnReceiveTrDataEvent e)
         {
             /*
             sScrNo – 화면번호
@@ -93,9 +84,7 @@ CommRqData( "RQName"	,  "OPW00004"	,  "0"	,  "화면번호");
                 , 출력건수
             );
             sbAll.AppendLine(tmp1);
-
-
-
+            
             int nCnt = axKHOpenAPI.GetRepeatCnt(e.sTrCode, e.sRQName); 
             for(int i = 1; i < nCnt; i++)
             {
@@ -143,16 +132,36 @@ CommRqData( "RQName"	,  "OPW00004"	,  "0"	,  "화면번호");
                 );
                 sbAll.AppendLine(tmp1);
             }
-
-
+            
             path = System.IO.Path.GetDirectoryName(path);
             path = path + "\\OPW00004_"+stockDate+".log";
             System.IO.StreamWriter file = new System.IO.StreamWriter(path, false);
             file.Write(sbAll.ToString());
             file.Close();
+        }
 
-
-
+        public override int Run(AxKHOpenAPILib.AxKHOpenAPI axKHOpenAPI, SpellOpt spell)
+        {
+/*
+[OPW00004: 계좌평가현황요청]
+1. Open API 조회 함수 입력값을 설정합니다.
+계좌번호 = 전문 조회할 보유계좌번호
+SetInputValue("계좌번호"	,  "입력값 1");
+비밀번호 = 사용안함(공백)
+SetInputValue("비밀번호"	,  "입력값 2");
+상장폐지조회구분 = 0:전체, 1:상장폐지종목제외
+SetInputValue("상장폐지조회구분"	,  "입력값 3");
+비밀번호입력매체구분 = 00
+SetInputValue("비밀번호입력매체구분"	,  "입력값 4");
+2. Open API 조회 함수를 호출해서 전문을 서버로 전송합니다.
+CommRqData( "RQName"	,  "OPW00004"	,  "0"	,  "화면번호");
+*/
+            axKHOpenAPI.SetInputValue("계좌번호", spell.stockCode);
+            axKHOpenAPI.SetInputValue("비밀번호", spell.endDate);
+            axKHOpenAPI.SetInputValue("상장폐지조회구분", "0");
+            axKHOpenAPI.SetInputValue("비밀번호입력매체구분", "00");
+            int ret = axKHOpenAPI.CommRqData(spell.sRQNAME, spell.sTrCode, spell.nPrevNext, spell.sScreenNo);
+            return ret;
         }
     }
 }
