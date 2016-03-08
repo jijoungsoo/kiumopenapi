@@ -81,8 +81,11 @@
   <ItemGroup>
     <Compile Include="Dto\OPT10075_Data.cs" />
     <Compile Include="Dto\OPT10085_Data.cs" />
+    <Compile Include="OpenApi\Config.cs" />
     <Compile Include="OpenApi\MyOrder.cs" />
     <Compile Include="OpenApi\MyStock.cs" />
+    <Compile Include="OpenApi\ScreenNumber.cs" />
+    <Compile Include="OpenApi\StockFile.cs" />
     <Compile Include="ReceiveChejanData\Balance.cs" />
     <Compile Include="ReceiveChejanData\Ordered.cs" />
     <Compile Include="ReceiveChejanData\Order.cs" />
@@ -92,7 +95,7 @@
     <Compile Include="Dto\REAL10003_Data.cs" />
     <Compile Include="Dto\REAL10002_Data.cs" />
     <Compile Include="Dto\REAL10001_Data.cs" />
-    <Compile Include="OpenApi\Class1.cs" />
+    <Compile Include="OpenApi\AppLib.cs" />
     <Compile Include="OpenApi\Commission.cs" />
     <Compile Include="OpenApi\FileLog.cs" />
     <Compile Include="Form1.cs">

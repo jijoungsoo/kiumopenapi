@@ -8,7 +8,6 @@ namespace OpenApi.Spell
 {
     public class SpellOpt
     {
-        private static string path = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
         public String key;
         public String value;
         public String sRQNAME;
@@ -38,9 +37,9 @@ namespace OpenApi.Spell
         {
             String tmpPath = "";
             if (this.sTrCode.Equals("OPT10059")) {
-                tmpPath = path + "\\" + this.sTrCode + "_" + this.stockCode + "_"+this.priceOrAmount + "_"+this.buyOrSell + ".txt";
+                tmpPath = this.sTrCode + "_" + this.stockCode + "_"+this.priceOrAmount + "_"+this.buyOrSell + ".txt";
             } else {
-                tmpPath = path + "\\" + this.sTrCode + "_" + this.stockCode + ".txt";
+                tmpPath = this.sTrCode + "_" + this.stockCode + ".txt";
             }
             return tmpPath;
         }
@@ -50,10 +49,10 @@ namespace OpenApi.Spell
             String tmpPath = "";
             if (this.sTrCode.Equals("OPT10059"))
             {
-                tmpPath = path + "\\" + this.sTrCode + "_" + this.priceOrAmount + "_" + this.buyOrSell + ".dat";
+                tmpPath =  this.sTrCode + "_" + this.priceOrAmount + "_" + this.buyOrSell + ".dat";
             }
             else {
-                tmpPath = path + "\\" + this.sTrCode + ".dat";
+                tmpPath = this.sTrCode + ".dat";
             }
             //FileLog.PrintF("GetCheckZipFileName() =" + tmpPath);
             return tmpPath;
@@ -64,10 +63,10 @@ namespace OpenApi.Spell
             String tmpPath = "";
             if (this.sTrCode.Equals("OPT10059"))
             {
-                tmpPath = path + "\\" + this.sTrCode + "_"+ endDate + "_" + this.priceOrAmount + "_" + this.buyOrSell + ".zip";
+                tmpPath =this.sTrCode + "_"+ endDate + "_" + this.priceOrAmount + "_" + this.buyOrSell + ".zip";
             }
             else {
-                tmpPath = path + "\\" + this.sTrCode + "_" + endDate + ".zip";
+                tmpPath = this.sTrCode + "_" + endDate + ".zip";
             }
             return tmpPath;
         }

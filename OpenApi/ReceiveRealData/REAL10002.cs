@@ -17,9 +17,8 @@ namespace OpenApi.ReceiveRealData
     ///</summary>
     public class REAL10002 : ReceiveRealData
     {
-        private static readonly String path = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
         public REAL10002(){
-            FileLog.PrintF("REAL10002");
+          //  FileLog.PrintF("REAL10002");
         }
         public override void ReceivedData(AxKHOpenAPILib.AxKHOpenAPI axKHOpenAPI, AxKHOpenAPILib._DKHOpenAPIEvents_OnReceiveRealDataEvent e)
         {
@@ -51,6 +50,7 @@ namespace OpenApi.ReceiveRealData
 	            [568] = 하한가발생시간           //(23)
                 
             */
+            /*
             FileLog.PrintF(String.Format("체결시간=> {0} ", axKHOpenAPI.GetCommRealData(e.sRealType, 20).Trim()));   //[0]
             FileLog.PrintF(String.Format("현재가=> {0} ", axKHOpenAPI.GetCommRealData(e.sRealType, 10).Trim()));     //[1]
             FileLog.PrintF(String.Format("전일대비=> {0} ", axKHOpenAPI.GetCommRealData(e.sRealType, 11).Trim()));   //[2]
@@ -78,7 +78,7 @@ namespace OpenApi.ReceiveRealData
             FileLog.PrintF(String.Format("종목코드=> {0} ", e.sRealKey.ToString().Trim()));
             FileLog.PrintF(String.Format("RealName=> {0} ", e.sRealType.ToString().Trim()));
             FileLog.PrintF(String.Format("sRealData=> {0} ", e.sRealData.ToString().Trim()));
-
+            */
             String 현재일자 = DateTime.Now.ToString("yyyy-MM-dd");
             String 체결시간TMP = axKHOpenAPI.GetCommRealData(e.sRealType, 20).Trim();           //[0]
             //체결시간이 6자리이므로 HHMMSS ==> HH:MM:SS로 바꿔야한다.
@@ -117,7 +117,7 @@ namespace OpenApi.ReceiveRealData
 
             MyStock.getClass1Instance().UpdateStockList(real10002_data);
 
-            SendDirectFile(real10002_data);
+         //   SendDirectFile(real10002_data);
             SendDirectDb(real10002_data);
 
         }
@@ -153,16 +153,19 @@ namespace OpenApi.ReceiveRealData
                      real10002_data.하한가발생시간,   //[24]
                      real10002_data.RealName   //[25]
              );
-            String path1= path + "\\주식체결.txt";
-            System.IO.StreamWriter file = new System.IO.StreamWriter(path1, true);
+            System.IO.StreamWriter file = new System.IO.StreamWriter(Config.GetPath() + "주식체결.txt", true);
             file.WriteLine(tmp1.ToString());
             file.Close();
         }
         private void SendDirectDb(REAL10002_Data real10002_data)
         {
-            using (MySqlConnection conn = new MySqlConnection(Class1.connStr))
+            using (MySqlConnection conn = new MySqlConnection(Config.GetDbConnStr()))
             {
-
+                String dayTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                String logTime = real10002_data.체결시간;
+                DateTime dayT = DateTime.ParseExact(dayTime, "yyyy-MM-dd HH:mm:ss", null);
+                DateTime logT = DateTime.ParseExact(logTime, "yyyy-MM-dd HH:mm:ss", null);
+                TimeSpan t = dayT - logT;
                 string sql = @"INSERT into realtime_contracts (
 stock_date
 ,stock_code
@@ -189,6 +192,9 @@ stock_date
 ,ko_accessibility_rate
 ,upper_price_limit_time
 ,lower_price_limit_time
+,created_at
+,updated_at
+,time_diff
 )
 VALUES
 (
@@ -217,6 +223,9 @@ VALUES
 ,@KO접근도
 ,@상한가발생시간
 ,@하한가발생시간
+,current_timestamp
+,current_timestamp
+,@time_diff
 );
 ";
                 conn.Open();
@@ -253,7 +262,9 @@ VALUES
                 cmd.Parameters.AddWithValue("@KO접근도", real10002_data.KO접근도);
                 cmd.Parameters.AddWithValue("@상한가발생시간", real10002_data.상한가발생시간);
                 cmd.Parameters.AddWithValue("@하한가발생시간", real10002_data.하한가발생시간);
-                cmd.ExecuteNonQuery();  //기존 계좌수익률을 삭제하고
+                cmd.Parameters.AddWithValue("@time_diff", t.TotalSeconds);
+                cmd.ExecuteNonQuery();
+
             }
         }
     

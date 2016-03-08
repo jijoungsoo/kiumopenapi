@@ -17,7 +17,6 @@ namespace OpenApi.ReceiveRealData
     ///</summary>
     public class REAL10004 : ReceiveRealData
     {
-        private static readonly  String  path = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
         public REAL10004(){
             FileLog.PrintF("REAL10003");
         }
@@ -234,9 +233,16 @@ namespace OpenApi.ReceiveRealData
             FileLog.PrintF(String.Format("RealName : {0} ==>", e.sRealType.ToString().Trim()));
             FileLog.PrintF(String.Format("sRealData : {0} ==>", e.sRealData.ToString().Trim()));
             
-            String 현재시간 = DateTime.Now.ToString("yyyyMMdd");
-            String 호가시간 = axKHOpenAPI.GetCommRealData(e.sRealType, 21).Trim();   //[0]
-            호가시간 = 현재시간 + " " + 호가시간;
+            String 현재시간 = DateTime.Now.ToString("yyyy-MM-dd");
+            
+
+
+            String 현재일자 = DateTime.Now.ToString("yyyy-MM-dd");
+            String 호가시간TMP = axKHOpenAPI.GetCommRealData(e.sRealType, 21).Trim();   //[0]
+            //체결시간이 6자리이므로 HHMMSS ==> HH:MM:SS로 바꿔야한다.
+            String 호가시간 = 호가시간TMP.Substring(0, 2) + ":" + 호가시간TMP.Substring(2, 2) + ":" + 호가시간TMP.Substring(4, 2);
+            호가시간 = 현재일자 + " " + 호가시간;
+
             REAL10004_Data real10004_data = new REAL10004_Data();
             real10004_data.호가시간 = 호가시간;
             real10004_data.매도호가1 = Int32.Parse(axKHOpenAPI.GetCommRealData(e.sRealType, 41).Trim());     //[1]
@@ -344,13 +350,9 @@ namespace OpenApi.ReceiveRealData
             real10004_data.종목코드 = e.sRealKey.ToString().Trim(); //[2]
             real10004_data.RealName = e.sRealType.ToString().Trim(); //[3]
                           
-            if (1 == 2)
-            {
+            
                 SendDirectFile(real10004_data);
-            }
-            else {
                 SendDirectDb(real10004_data);
-            }
         }
 
         private void SendDirectFile(REAL10004_Data real10004_data)
@@ -465,18 +467,21 @@ namespace OpenApi.ReceiveRealData
 ,real10004_data.RealName
              );
 
-            String path1 = path + "\\주식호가잔량.txt";
-            System.IO.StreamWriter file = new System.IO.StreamWriter(path1, true);
-            file.Write(tmp1.ToString());
+            System.IO.StreamWriter file = new System.IO.StreamWriter(Config.GetPath() + "\\주식호가잔량.txt", true);
+            file.WriteLine(tmp1.ToString());
             file.Close();
         }
         private void SendDirectDb(REAL10004_Data real10004_data)
         {
-            using (MySqlConnection conn = new MySqlConnection(Class1.connStr))
+            using (MySqlConnection conn = new MySqlConnection(Config.GetDbConnStr()))
             {
-
+                String dayTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                String logTime = real10004_data.호가시간;
+                DateTime dayT = DateTime.ParseExact(dayTime, "yyyy-MM-dd HH:mm:ss", null);
+                DateTime logT = DateTime.ParseExact(logTime, "yyyy-MM-dd HH:mm:ss", null);
+                TimeSpan t = dayT - logT;
                 string sql = @"INSERT into realtime_offered_and_bids (
-호가시간
+stock_date
 ,stock_code
 ,offered_price1
 ,offered_quantity1
@@ -580,6 +585,9 @@ namespace OpenApi.ReceiveRealData
 ,expectation_contract_yesterday_contrast_rate
 ,market_gubun
 ,investor_ticker
+,created_at
+,updated_at
+,time_diff
 )
 VALUES
 (
@@ -687,6 +695,9 @@ VALUES
 ,@전일거래량대비예상체결률
 ,@장운영구분
 ,@투자자별ticker
+,current_timestamp
+,current_timestamp
+,@time_diff
 );
 ";
                 conn.Open();
@@ -795,13 +806,8 @@ VALUES
                 cmd.Parameters.AddWithValue("@전일거래량대비예상체결률",real10004_data.전일거래량대비예상체결률);
                 cmd.Parameters.AddWithValue("@장운영구분",real10004_data.장운영구분);
                 cmd.Parameters.AddWithValue("@투자자별ticker",real10004_data.투자자별ticker);
-              
-
-
-
-
-
-                                                 cmd.ExecuteNonQuery();  //기존 계좌수익률을 삭제하고
+                cmd.Parameters.AddWithValue("@time_diff", t.TotalSeconds);
+                cmd.ExecuteNonQuery();
             }
         }
     }

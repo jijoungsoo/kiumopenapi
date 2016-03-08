@@ -48,7 +48,7 @@ namespace OpenApi.ReceiveTrData
                     , e.sTrCode
                     , e.sScrNo
                 );
-                종목코드 = Class1.getClass1Instance().getStockCode(keyStockCode);
+                종목코드 = AppLib.getClass1Instance().getStockCode(keyStockCode);
 
                 String keyLayout = "sRQName:{0}|sTrCode:{1}|sScreenNo:{2}|stockCode:{3}";
                 String key = String.Format(keyLayout
@@ -58,7 +58,7 @@ namespace OpenApi.ReceiveTrData
                     , 종목코드
                 );
             
-                spell = Class1.getClass1Instance().getSpell(key);
+                spell = AppLib.getClass1Instance().getSpell(key);
                 String startDate = spell.startDate;
 
                 String lastStockDate = "";
@@ -166,8 +166,8 @@ namespace OpenApi.ReceiveTrData
                     prevNext = 0;
                 }
 
-                this.DisconnectRealData(axKHOpenAPI, e.sScrNo);
-                this.SetRealRemove(axKHOpenAPI, "ALL", "ALL");
+                ScreenNumber.getClass1Instance().DisconnectRealData( e.sScrNo);
+                ScreenNumber.getClass1Instance().SetRealRemove( "ALL", "ALL");
 
                 putReceivedQueueAndsetNextSpell(key,sbAll.ToString(), prevNext, lastStockDate);
             }

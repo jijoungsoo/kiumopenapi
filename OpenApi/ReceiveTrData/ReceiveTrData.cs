@@ -30,17 +30,6 @@ namespace OpenApi.ReceiveTrData
             }
         }
 
-        protected void DisconnectRealData(AxKHOpenAPILib.AxKHOpenAPI axKHOpenAPI,String sScrNo)
-        {
-            FileLog.PrintF(String.Format("DisconnectRealData sScrNo=>" + sScrNo));
-            axKHOpenAPI.DisconnectRealData(sScrNo);
-        }
-
-        protected void SetRealRemove(AxKHOpenAPILib.AxKHOpenAPI axKHOpenAPI, String sScrNo,String strDelCode)
-        {
-            FileLog.PrintF(String.Format("SetRealRemove sScrNo=>" +sScrNo + ",strDelCode=>" + strDelCode));
-            axKHOpenAPI.SetRealRemove(sScrNo, strDelCode);
-        }
 
         protected void putReceivedQueueAndsetNextSpell(String key,String message, int prevNext, String lastStockDate)
         {
@@ -48,9 +37,9 @@ namespace OpenApi.ReceiveTrData
             tmp.nPrevNext = prevNext;
             tmp.lastStockDate = lastStockDate;
             tmp.value = message;
-            Class1.getClass1Instance().removeSpellDictionary(key);
-            Class1.getClass1Instance().AddSpellDictionary(key, tmp);
-            Class1.getClass1Instance().EnqueueByReceivedQueue(tmp);
+            AppLib.getClass1Instance().removeSpellDictionary(key);
+            AppLib.getClass1Instance().AddSpellDictionary(key, tmp);
+            AppLib.getClass1Instance().EnqueueByReceivedQueue(tmp);
         }
 
     }

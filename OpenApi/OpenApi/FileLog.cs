@@ -12,13 +12,12 @@ namespace OpenApi
 {
     class FileLog
     {
-        private static readonly string path = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
         //private static FileInfo fileInfo = new FileInfo(System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + "\\log.log");
         private static readonly object locker = new object();
         public static void PrintF(String line)
         {
             String day = DateTime.Now.ToString("yyyyMMdd");
-            FileInfo fileInfo = new FileInfo(path + "\\log_"+ day + ".log");
+            FileInfo fileInfo = new FileInfo(Config.GetPath() + "log_"+ day + ".log");
             //   Console.WriteLine("PrintF");
             /*
             음 이것도.. UI 쓰레드에서 돌리면 부하가 걸리는구나..

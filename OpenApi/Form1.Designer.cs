@@ -149,6 +149,17 @@
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.groupBox19 = new System.Windows.Forms.GroupBox();
+            this.label76 = new System.Windows.Forms.Label();
+            this.label77 = new System.Windows.Forms.Label();
+            this.tx_orderGubun = new System.Windows.Forms.TextBox();
+            this.label78 = new System.Windows.Forms.Label();
+            this.tx_orderStatus = new System.Windows.Forms.TextBox();
+            this.label79 = new System.Windows.Forms.Label();
+            this.tx_accountNum_5 = new System.Windows.Forms.TextBox();
+            this.label80 = new System.Windows.Forms.Label();
+            this.btn_SearchContractStatus = new System.Windows.Forms.Button();
+            this.label81 = new System.Windows.Forms.Label();
             this.groupBox18 = new System.Windows.Forms.GroupBox();
             this.lb_profitStatus = new System.Windows.Forms.Label();
             this.lb_lossStatus = new System.Windows.Forms.Label();
@@ -191,6 +202,12 @@
             this.label47 = new System.Windows.Forms.Label();
             this.btn_GetEstimationProperty = new System.Windows.Forms.Button();
             this.tabPage3 = new System.Windows.Forms.TabPage();
+            this.GetStockInfo = new System.Windows.Forms.GroupBox();
+            this.label74 = new System.Windows.Forms.Label();
+            this.tx_stockCode_7 = new System.Windows.Forms.TextBox();
+            this.label75 = new System.Windows.Forms.Label();
+            this.btn_GetStockInfo = new System.Windows.Forms.Button();
+            this.label83 = new System.Windows.Forms.Label();
             this.groupBox17 = new System.Windows.Forms.GroupBox();
             this.label65 = new System.Windows.Forms.Label();
             this.tx_sOrgOrderNo = new System.Windows.Forms.TextBox();
@@ -212,17 +229,6 @@
             this.groupBox15 = new System.Windows.Forms.GroupBox();
             this.btn_GetConditionNameList = new System.Windows.Forms.Button();
             this.groupBox14 = new System.Windows.Forms.GroupBox();
-            this.groupBox19 = new System.Windows.Forms.GroupBox();
-            this.label77 = new System.Windows.Forms.Label();
-            this.tx_orderStatus = new System.Windows.Forms.TextBox();
-            this.label79 = new System.Windows.Forms.Label();
-            this.tx_accountNum_5 = new System.Windows.Forms.TextBox();
-            this.label80 = new System.Windows.Forms.Label();
-            this.btn_SearchContractStatus = new System.Windows.Forms.Button();
-            this.label81 = new System.Windows.Forms.Label();
-            this.label76 = new System.Windows.Forms.Label();
-            this.tx_orderGubun = new System.Windows.Forms.TextBox();
-            this.label78 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.axKHOpenAPI)).BeginInit();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -240,6 +246,7 @@
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
+            this.groupBox19.SuspendLayout();
             this.groupBox18.SuspendLayout();
             this.이익매활성화여부.SuspendLayout();
             this.손절매활성화여부.SuspendLayout();
@@ -247,10 +254,10 @@
             this.groupBox13.SuspendLayout();
             this.groupBox12.SuspendLayout();
             this.tabPage3.SuspendLayout();
+            this.GetStockInfo.SuspendLayout();
             this.groupBox17.SuspendLayout();
             this.groupBox15.SuspendLayout();
             this.groupBox14.SuspendLayout();
-            this.groupBox19.SuspendLayout();
             this.SuspendLayout();
             // 
             // axKHOpenAPI
@@ -1196,9 +1203,9 @@
             this.label69.AutoSize = true;
             this.label69.Location = new System.Drawing.Point(15, 96);
             this.label69.Name = "label69";
-            this.label69.Size = new System.Drawing.Size(80, 12);
+            this.label69.Size = new System.Drawing.Size(112, 12);
             this.label69.TabIndex = 59;
-            this.label69.Text = "(ext 10;11;12)";
+            this.label69.Text = "(ext 10;11;12;21;71)";
             // 
             // label68
             // 
@@ -1413,6 +1420,112 @@
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "상시조회";
             this.tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // groupBox19
+            // 
+            this.groupBox19.Controls.Add(this.label76);
+            this.groupBox19.Controls.Add(this.label77);
+            this.groupBox19.Controls.Add(this.tx_orderGubun);
+            this.groupBox19.Controls.Add(this.label78);
+            this.groupBox19.Controls.Add(this.tx_orderStatus);
+            this.groupBox19.Controls.Add(this.label79);
+            this.groupBox19.Controls.Add(this.tx_accountNum_5);
+            this.groupBox19.Controls.Add(this.label80);
+            this.groupBox19.Controls.Add(this.btn_SearchContractStatus);
+            this.groupBox19.Controls.Add(this.label81);
+            this.groupBox19.Location = new System.Drawing.Point(6, 169);
+            this.groupBox19.Name = "groupBox19";
+            this.groupBox19.Size = new System.Drawing.Size(200, 190);
+            this.groupBox19.TabIndex = 70;
+            this.groupBox19.TabStop = false;
+            this.groupBox19.Text = "실시간미체결요청(OPT10075)";
+            // 
+            // label76
+            // 
+            this.label76.AutoSize = true;
+            this.label76.Location = new System.Drawing.Point(10, 130);
+            this.label76.Name = "label76";
+            this.label76.Size = new System.Drawing.Size(137, 12);
+            this.label76.TabIndex = 67;
+            this.label76.Text = "( 0:전체, 1:매도, 2:매수)";
+            // 
+            // label77
+            // 
+            this.label77.AutoSize = true;
+            this.label77.Location = new System.Drawing.Point(10, 87);
+            this.label77.Name = "label77";
+            this.label77.Size = new System.Drawing.Size(107, 12);
+            this.label77.TabIndex = 66;
+            this.label77.Text = "( 0:전체, 1:미체결)";
+            // 
+            // tx_orderGubun
+            // 
+            this.tx_orderGubun.Location = new System.Drawing.Point(68, 104);
+            this.tx_orderGubun.Name = "tx_orderGubun";
+            this.tx_orderGubun.Size = new System.Drawing.Size(100, 21);
+            this.tx_orderGubun.TabIndex = 62;
+            this.tx_orderGubun.Text = "0";
+            // 
+            // label78
+            // 
+            this.label78.AutoSize = true;
+            this.label78.Location = new System.Drawing.Point(10, 107);
+            this.label78.Name = "label78";
+            this.label78.Size = new System.Drawing.Size(53, 12);
+            this.label78.TabIndex = 63;
+            this.label78.Text = "매매구분";
+            // 
+            // tx_orderStatus
+            // 
+            this.tx_orderStatus.Location = new System.Drawing.Point(68, 60);
+            this.tx_orderStatus.Name = "tx_orderStatus";
+            this.tx_orderStatus.Size = new System.Drawing.Size(100, 21);
+            this.tx_orderStatus.TabIndex = 60;
+            this.tx_orderStatus.Text = "0";
+            // 
+            // label79
+            // 
+            this.label79.AutoSize = true;
+            this.label79.Location = new System.Drawing.Point(10, 64);
+            this.label79.Name = "label79";
+            this.label79.Size = new System.Drawing.Size(53, 12);
+            this.label79.TabIndex = 61;
+            this.label79.Text = "체결구분";
+            // 
+            // tx_accountNum_5
+            // 
+            this.tx_accountNum_5.Location = new System.Drawing.Point(68, 20);
+            this.tx_accountNum_5.Name = "tx_accountNum_5";
+            this.tx_accountNum_5.Size = new System.Drawing.Size(100, 21);
+            this.tx_accountNum_5.TabIndex = 44;
+            // 
+            // label80
+            // 
+            this.label80.AutoSize = true;
+            this.label80.Location = new System.Drawing.Point(15, 43);
+            this.label80.Name = "label80";
+            this.label80.Size = new System.Drawing.Size(99, 12);
+            this.label80.TabIndex = 45;
+            this.label80.Text = "(계좌번호10자리)";
+            // 
+            // btn_SearchContractStatus
+            // 
+            this.btn_SearchContractStatus.Location = new System.Drawing.Point(12, 155);
+            this.btn_SearchContractStatus.Name = "btn_SearchContractStatus";
+            this.btn_SearchContractStatus.Size = new System.Drawing.Size(162, 23);
+            this.btn_SearchContractStatus.TabIndex = 49;
+            this.btn_SearchContractStatus.Text = "실시간미체결조회";
+            this.btn_SearchContractStatus.UseVisualStyleBackColor = true;
+            this.btn_SearchContractStatus.Click += new System.EventHandler(this.btn_SearchContractStatus_Click);
+            // 
+            // label81
+            // 
+            this.label81.AutoSize = true;
+            this.label81.Location = new System.Drawing.Point(10, 22);
+            this.label81.Name = "label81";
+            this.label81.Size = new System.Drawing.Size(53, 12);
+            this.label81.TabIndex = 45;
+            this.label81.Text = "계좌번호";
             // 
             // groupBox18
             // 
@@ -1824,6 +1937,7 @@
             // 
             // tabPage3
             // 
+            this.tabPage3.Controls.Add(this.GetStockInfo);
             this.tabPage3.Controls.Add(this.groupBox17);
             this.tabPage3.Controls.Add(this.groupBox15);
             this.tabPage3.Controls.Add(this.groupBox14);
@@ -1835,6 +1949,64 @@
             this.tabPage3.TabIndex = 2;
             this.tabPage3.Text = "일반함수조회";
             this.tabPage3.UseVisualStyleBackColor = true;
+            // 
+            // GetStockInfo
+            // 
+            this.GetStockInfo.Controls.Add(this.label74);
+            this.GetStockInfo.Controls.Add(this.tx_stockCode_7);
+            this.GetStockInfo.Controls.Add(this.label75);
+            this.GetStockInfo.Controls.Add(this.btn_GetStockInfo);
+            this.GetStockInfo.Controls.Add(this.label83);
+            this.GetStockInfo.Location = new System.Drawing.Point(202, 167);
+            this.GetStockInfo.Name = "GetStockInfo";
+            this.GetStockInfo.Size = new System.Drawing.Size(200, 113);
+            this.GetStockInfo.TabIndex = 60;
+            this.GetStockInfo.TabStop = false;
+            this.GetStockInfo.Text = "주식정보";
+            // 
+            // label74
+            // 
+            this.label74.AutoSize = true;
+            this.label74.Location = new System.Drawing.Point(15, 62);
+            this.label74.Name = "label74";
+            this.label74.Size = new System.Drawing.Size(179, 12);
+            this.label74.TabIndex = 50;
+            this.label74.Text = "(상장일반환,종목상태,감리구분)";
+            // 
+            // tx_stockCode_7
+            // 
+            this.tx_stockCode_7.Location = new System.Drawing.Point(82, 19);
+            this.tx_stockCode_7.Name = "tx_stockCode_7";
+            this.tx_stockCode_7.Size = new System.Drawing.Size(100, 21);
+            this.tx_stockCode_7.TabIndex = 44;
+            // 
+            // label75
+            // 
+            this.label75.AutoSize = true;
+            this.label75.Location = new System.Drawing.Point(15, 43);
+            this.label75.Name = "label75";
+            this.label75.Size = new System.Drawing.Size(95, 12);
+            this.label75.TabIndex = 45;
+            this.label75.Text = "(주식종목1,ALL)";
+            // 
+            // btn_GetStockInfo
+            // 
+            this.btn_GetStockInfo.Location = new System.Drawing.Point(6, 84);
+            this.btn_GetStockInfo.Name = "btn_GetStockInfo";
+            this.btn_GetStockInfo.Size = new System.Drawing.Size(188, 23);
+            this.btn_GetStockInfo.TabIndex = 49;
+            this.btn_GetStockInfo.Text = "주식정보가져오기";
+            this.btn_GetStockInfo.UseVisualStyleBackColor = true;
+            this.btn_GetStockInfo.Click += new System.EventHandler(this.btn_GetStockInfo_Click);
+            // 
+            // label83
+            // 
+            this.label83.AutoSize = true;
+            this.label83.Location = new System.Drawing.Point(10, 22);
+            this.label83.Name = "label83";
+            this.label83.Size = new System.Drawing.Size(53, 12);
+            this.label83.TabIndex = 45;
+            this.label83.Text = "종목코드";
             // 
             // groupBox17
             // 
@@ -1910,6 +2082,7 @@
             this.tx_nPrice.Name = "tx_nPrice";
             this.tx_nPrice.Size = new System.Drawing.Size(100, 21);
             this.tx_nPrice.TabIndex = 61;
+            this.tx_nPrice.Text = "0";
             // 
             // label62
             // 
@@ -1926,6 +2099,7 @@
             this.tx_nQty.Name = "tx_nQty";
             this.tx_nQty.Size = new System.Drawing.Size(100, 21);
             this.tx_nQty.TabIndex = 59;
+            this.tx_nQty.Text = "1";
             // 
             // label61
             // 
@@ -2034,112 +2208,6 @@
             this.groupBox14.TabStop = false;
             this.groupBox14.Text = "OpenApi 위치";
             // 
-            // groupBox19
-            // 
-            this.groupBox19.Controls.Add(this.label76);
-            this.groupBox19.Controls.Add(this.label77);
-            this.groupBox19.Controls.Add(this.tx_orderGubun);
-            this.groupBox19.Controls.Add(this.label78);
-            this.groupBox19.Controls.Add(this.tx_orderStatus);
-            this.groupBox19.Controls.Add(this.label79);
-            this.groupBox19.Controls.Add(this.tx_accountNum_5);
-            this.groupBox19.Controls.Add(this.label80);
-            this.groupBox19.Controls.Add(this.btn_SearchContractStatus);
-            this.groupBox19.Controls.Add(this.label81);
-            this.groupBox19.Location = new System.Drawing.Point(6, 169);
-            this.groupBox19.Name = "groupBox19";
-            this.groupBox19.Size = new System.Drawing.Size(200, 316);
-            this.groupBox19.TabIndex = 70;
-            this.groupBox19.TabStop = false;
-            this.groupBox19.Text = "실시간미체결요청(OPT10075)";
-            // 
-            // label77
-            // 
-            this.label77.AutoSize = true;
-            this.label77.Location = new System.Drawing.Point(10, 87);
-            this.label77.Name = "label77";
-            this.label77.Size = new System.Drawing.Size(107, 12);
-            this.label77.TabIndex = 66;
-            this.label77.Text = "( 0:전체, 1:미체결)";
-            // 
-            // tx_orderStatus
-            // 
-            this.tx_orderStatus.Location = new System.Drawing.Point(68, 60);
-            this.tx_orderStatus.Name = "tx_orderStatus";
-            this.tx_orderStatus.Size = new System.Drawing.Size(100, 21);
-            this.tx_orderStatus.TabIndex = 60;
-            this.tx_orderStatus.Text = "0";
-            // 
-            // label79
-            // 
-            this.label79.AutoSize = true;
-            this.label79.Location = new System.Drawing.Point(10, 64);
-            this.label79.Name = "label79";
-            this.label79.Size = new System.Drawing.Size(53, 12);
-            this.label79.TabIndex = 61;
-            this.label79.Text = "체결구분";
-            // 
-            // tx_accountNum_5
-            // 
-            this.tx_accountNum_5.Location = new System.Drawing.Point(68, 20);
-            this.tx_accountNum_5.Name = "tx_accountNum_5";
-            this.tx_accountNum_5.Size = new System.Drawing.Size(100, 21);
-            this.tx_accountNum_5.TabIndex = 44;
-            // 
-            // label80
-            // 
-            this.label80.AutoSize = true;
-            this.label80.Location = new System.Drawing.Point(15, 43);
-            this.label80.Name = "label80";
-            this.label80.Size = new System.Drawing.Size(99, 12);
-            this.label80.TabIndex = 45;
-            this.label80.Text = "(계좌번호10자리)";
-            // 
-            // btn_SearchContractStatus
-            // 
-            this.btn_SearchContractStatus.Location = new System.Drawing.Point(12, 155);
-            this.btn_SearchContractStatus.Name = "btn_SearchContractStatus";
-            this.btn_SearchContractStatus.Size = new System.Drawing.Size(162, 23);
-            this.btn_SearchContractStatus.TabIndex = 49;
-            this.btn_SearchContractStatus.Text = "실시간미체결조회";
-            this.btn_SearchContractStatus.UseVisualStyleBackColor = true;
-            this.btn_SearchContractStatus.Click += new System.EventHandler(this.btn_SearchContractStatus_Click);
-            // 
-            // label81
-            // 
-            this.label81.AutoSize = true;
-            this.label81.Location = new System.Drawing.Point(10, 22);
-            this.label81.Name = "label81";
-            this.label81.Size = new System.Drawing.Size(53, 12);
-            this.label81.TabIndex = 45;
-            this.label81.Text = "계좌번호";
-            // 
-            // label76
-            // 
-            this.label76.AutoSize = true;
-            this.label76.Location = new System.Drawing.Point(10, 130);
-            this.label76.Name = "label76";
-            this.label76.Size = new System.Drawing.Size(137, 12);
-            this.label76.TabIndex = 67;
-            this.label76.Text = "( 0:전체, 1:매도, 2:매수)";
-            // 
-            // tx_orderGubun
-            // 
-            this.tx_orderGubun.Location = new System.Drawing.Point(68, 104);
-            this.tx_orderGubun.Name = "tx_orderGubun";
-            this.tx_orderGubun.Size = new System.Drawing.Size(100, 21);
-            this.tx_orderGubun.TabIndex = 62;
-            this.tx_orderGubun.Text = "0";
-            // 
-            // label78
-            // 
-            this.label78.AutoSize = true;
-            this.label78.Location = new System.Drawing.Point(10, 107);
-            this.label78.Name = "label78";
-            this.label78.Size = new System.Drawing.Size(53, 12);
-            this.label78.TabIndex = 63;
-            this.label78.Text = "매매구분";
-            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
@@ -2167,7 +2235,6 @@
             this.Text = "비밀번호";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.Form1_FormClosed);
-            this.Load += new System.EventHandler(this.Form1_Load);
             ((System.ComponentModel.ISupportInitialize)(this.axKHOpenAPI)).EndInit();
             this.groupBox1.ResumeLayout(false);
             this.groupBox2.ResumeLayout(false);
@@ -2196,6 +2263,8 @@
             this.tabControl1.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
             this.tabPage2.ResumeLayout(false);
+            this.groupBox19.ResumeLayout(false);
+            this.groupBox19.PerformLayout();
             this.groupBox18.ResumeLayout(false);
             this.groupBox18.PerformLayout();
             this.이익매활성화여부.ResumeLayout(false);
@@ -2209,12 +2278,12 @@
             this.groupBox12.ResumeLayout(false);
             this.groupBox12.PerformLayout();
             this.tabPage3.ResumeLayout(false);
+            this.GetStockInfo.ResumeLayout(false);
+            this.GetStockInfo.PerformLayout();
             this.groupBox17.ResumeLayout(false);
             this.groupBox17.PerformLayout();
             this.groupBox15.ResumeLayout(false);
             this.groupBox14.ResumeLayout(false);
-            this.groupBox19.ResumeLayout(false);
-            this.groupBox19.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -2414,6 +2483,12 @@
         private System.Windows.Forms.Label label76;
         private System.Windows.Forms.TextBox tx_orderGubun;
         private System.Windows.Forms.Label label78;
+        private System.Windows.Forms.GroupBox GetStockInfo;
+        private System.Windows.Forms.TextBox tx_stockCode_7;
+        private System.Windows.Forms.Label label75;
+        private System.Windows.Forms.Button btn_GetStockInfo;
+        private System.Windows.Forms.Label label83;
+        private System.Windows.Forms.Label label74;
     }
 }
 

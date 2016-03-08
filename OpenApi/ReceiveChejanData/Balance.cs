@@ -11,8 +11,6 @@ namespace OpenApi.ReceiveChejanData
 {
     class Balance : ReceiveChejanData
     {
-        private static readonly String path = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-
         public Balance()
         {
             FileLog.PrintF("Balance");
@@ -88,14 +86,13 @@ namespace OpenApi.ReceiveChejanData
                  balance_Data.주식옵션거래단위  //[16]
              );
 
-            String path1 = path + "\\잔고.txt";
-            System.IO.StreamWriter file = new System.IO.StreamWriter(path1, true);
-            file.Write(tmp1.ToString());
+            System.IO.StreamWriter file = new System.IO.StreamWriter(Config.GetPath() + "잔고.txt", true);
+            file.WriteLine(tmp1.ToString());
             file.Close();
         }
         private void SendDirectDb(Balance_Data balance_Data)
         {
-            using (MySqlConnection conn = new MySqlConnection(Class1.connStr))
+            using (MySqlConnection conn = new MySqlConnection(Config.GetDbConnStr()))
             {
                 string sql = @"INSERT into  balances (
 reg_time

@@ -15,28 +15,11 @@ namespace WcfServiceLibrary
     // 참고: "리팩터링" 메뉴에서 "이름 바꾸기" 명령을 사용하여 코드 및 config 파일에서 클래스 이름 "Service1"을 변경할 수 있습니다.
     public class KiwoomOpenApiService : IKiwoomOpenApi
     {
-        private Class1 class2 = Class1.getClass1Instance();
+        private AppLib class2 = AppLib.getClass1Instance();
         private AxKHOpenAPI axKHOpenAPI= null;
 
         public KiwoomOpenApiService(){
             axKHOpenAPI = class2.getAxKHOpenAPIInstance();
-            //from 에서 등록하기 때문에 굳이 이렇게 등록안해도 됨..
-            //Tran 수신시 이벤트
-            ///this.axKHOpenAPI.OnReceiveTrData += new AxKHOpenAPILib._DKHOpenAPIEvents_OnReceiveTrDataEventHandler(this.axKHOpenAPI_OnReceiveTrData);
-            //실시간 시세 이벤트
-            this.axKHOpenAPI.OnReceiveRealData += new AxKHOpenAPILib._DKHOpenAPIEvents_OnReceiveRealDataEventHandler(this.axKHOpenAPI_OnReceiveRealData);
-            //수신 메시지 이벤트
-            this.axKHOpenAPI.OnReceiveMsg += new AxKHOpenAPILib._DKHOpenAPIEvents_OnReceiveMsgEventHandler(this.axKHOpenAPI_OnReceiveMsg);
-            //주문 접수/ 확인 수신시 이벤트
-            this.axKHOpenAPI.OnReceiveChejanData += new AxKHOpenAPILib._DKHOpenAPIEvents_OnReceiveChejanDataEventHandler(this.axKHOpenAPI_OnReceiveChejanData);
-            //통신 연결 상태 변경시 이벤트
-            this.axKHOpenAPI.OnEventConnect += new AxKHOpenAPILib._DKHOpenAPIEvents_OnEventConnectEventHandler(this.axKHOpenAPI_OnEventConnect);
-            //조건검색 실시간 편입,이탈종목 이벤트
-            this.axKHOpenAPI.OnReceiveRealCondition += new AxKHOpenAPILib._DKHOpenAPIEvents_OnReceiveRealConditionEventHandler(this.axKHOpenAPI_OnReceiveRealCondition);
-            //조건검색 조회응답 이벤트
-            this.axKHOpenAPI.OnReceiveTrCondition += new AxKHOpenAPILib._DKHOpenAPIEvents_OnReceiveTrConditionEventHandler(this.axKHOpenAPI_OnReceiveTrCondition);
-            //로컬에 사용자조건식 저장 성공여부 응답 이벤트
-            this.axKHOpenAPI.OnReceiveConditionVer += new AxKHOpenAPILib._DKHOpenAPIEvents_OnReceiveConditionVerEventHandler(this.axKHOpenAPI_OnReceiveConditionVer);
         }
 
         public string GetData(int value)
@@ -48,7 +31,7 @@ namespace WcfServiceLibrary
         {
             //035420   <--네이버종목번호\
             this.axKHOpenAPI.SetInputValue("종목코드", 종목코드);
-            int nRet = axKHOpenAPI.CommRqData("주식기본정보", "OPT10001", 0, class2.GetEosScrNum());
+            int nRet = axKHOpenAPI.CommRqData("주식기본정보", "OPT10001", 0, ScreenNumber.getClass1Instance().GetEosScrNum());
 
             return "sdfsdf:";
 
@@ -1126,7 +1109,7 @@ namespace WcfServiceLibrary
             */
             //Class1.getClass1Instance().waitOneOpt10081();// 멈추기..
             
-            String sScreenNo = Class1.getClass1Instance().GetEosScrNum();
+            String sScreenNo = ScreenNumber.getClass1Instance().GetEosScrNum();
             String sRQName = "주식일봉차트조회";
             String sTrCode = "OPT10081";
             int nPrevNext = 0;
@@ -1161,8 +1144,8 @@ namespace WcfServiceLibrary
             //음 받는쪽에서 일자하고 nPrevNext를 알수가 없어서..키로 쓸수가 없다...
             //종목코드로도 찾을 수가 없네 종목코드도 지우자.
             //spell=""
-            Class1.getClass1Instance().AddStockCodeDictionary(keyStockCode, strCode);
-            Class1.getClass1Instance().AddSpellDictionary(key, spellOpt10081);
+            AppLib.getClass1Instance().AddStockCodeDictionary(keyStockCode, strCode);
+            AppLib.getClass1Instance().AddSpellDictionary(key, spellOpt10081);
 
 
             axKHOpenAPI.SetInputValue("종목코드", strCode);
@@ -1191,7 +1174,7 @@ namespace WcfServiceLibrary
         /// </summary>
         public String GetOpw00003(String accountNum,String password)
         {
-            String sRQName = "추정자산조회요청";
+            String sRQName = "추정자산조회요청WCF";
             String sTrCode = "OPW00003";
 
             FileLog.PrintF("WCF GetOpt00003 accountNum=" + accountNum);
@@ -1204,7 +1187,7 @@ namespace WcfServiceLibrary
             spellOpw00003.password = password;
 
 
-            String sScrNo = Class1.getClass1Instance().GetAnyTimeScrNum();
+            String sScrNo = ScreenNumber.getClass1Instance().GetAnyTimeScrNum(); 
             String keyStockCodeLayout = "sRQName:{0}|sTrCode:{1}|sScreenNo:{2}";
             String keyStockCode = String.Format(keyStockCodeLayout
                 , sRQName
@@ -1221,8 +1204,8 @@ namespace WcfServiceLibrary
             spellOpw00003.sScreenNo = sScrNo;
             FileLog.PrintF("keyStockCode  ==" + keyStockCode);
 
-            Class1.getClass1Instance().AddSpellDictionary(key, spellOpw00003);
-            Class1.getClass1Instance().AddStockCodeDictionary(keyStockCode, accountNum);
+            AppLib.getClass1Instance().AddSpellDictionary(key, spellOpw00003);
+            AppLib.getClass1Instance().AddStockCodeDictionary(keyStockCode, accountNum);
             //QUEUE를 따지 않고 바로 실행되어야 한다.
             ReceiveTrDataFactory rtf = ReceiveTrDataFactory.getClass1Instance();
             ReceiveTrData rt = rtf.getReceiveTrData(spellOpw00003.sTrCode);
@@ -1249,7 +1232,7 @@ namespace WcfServiceLibrary
         /// </summary>
         public String GetOpt10085(String accountNum)
         {
-            String sRQName = "계좌수익률요청";
+            String sRQName = "계좌수익률요청WCF";
             String sTrCode = "OPT10085";
 
             FileLog.PrintF("WCF GetOpt10085 accountNum=" + accountNum);
@@ -1259,7 +1242,7 @@ namespace WcfServiceLibrary
             spellOpt10085.sTrCode = sTrCode;
             spellOpt10085.accountNum = accountNum;
 
-            String sScrNo = Class1.getClass1Instance().GetAnyTimeScrNum();
+            String sScrNo = ScreenNumber.getClass1Instance().GetAnyTimeScrNum();
             String keyStockCodeLayout = "sRQName:{0}|sTrCode:{1}|sScreenNo:{2}";
             String keyStockCode = String.Format(keyStockCodeLayout
                 , sRQName
@@ -1276,8 +1259,8 @@ namespace WcfServiceLibrary
             spellOpt10085.sScreenNo = sScrNo;
             FileLog.PrintF("keyStockCode  ==" + keyStockCode);
 
-            Class1.getClass1Instance().AddSpellDictionary(key, spellOpt10085);
-            Class1.getClass1Instance().AddStockCodeDictionary(keyStockCode, accountNum);
+            AppLib.getClass1Instance().AddSpellDictionary(key, spellOpt10085);
+            AppLib.getClass1Instance().AddStockCodeDictionary(keyStockCode, accountNum);
             //QUEUE를 따지 않고 바로 실행되어야 한다.
             ReceiveTrDataFactory rtf = ReceiveTrDataFactory.getClass1Instance();
             ReceiveTrData rt = rtf.getReceiveTrData(spellOpt10085.sTrCode);
@@ -1293,174 +1276,5 @@ namespace WcfServiceLibrary
                 return "[WCF GetOpt10085][NOK]:" + Error.GetErrorMessage();
             }
         }
-
-
-
-
-        #region 이벤트
-        /// <summary>
-        ///[E1]Tran 수신시 이벤트
-        ///this.axKHOpenAPI.OnReceiveTrData += new AxKHOpenAPILib._DKHOpenAPIEvents_OnReceiveTrDataEventHandler(this.axKHOpenAPI_OnReceiveTrData);
-        ///서버통신 후 데이터를 받은 시점을 알려준다.
-        ///입력값
-        ///sScrNo – 화면번호
-        ///sRQName – 사용자구분 명
-        ///sTrCode – Tran 명
-        ///sRecordName – Record 명
-        ///sPreNext – 연속조회 유무
-        ///nDataLength – 1.0.0.1 버전 이후 사용하지 않음.
-        ///sErrorCode – 1.0.0.1 버전 이후 사용하지 않음.
-        ///sMessage – 1.0.0.1 버전 이후 사용하지 않음.
-        ///sSplmMsg - 1.0.0.1 버전 이후 사용하지 않음.
-        ///반환값 없음
-        ///비고
-        ///sRQName – CommRqData의 sRQName과 매핑되는 이름이다.
-        ///sTrCode – CommRqData의 sTrCode과 매핑되는 이름이다.
-        /// </summary>
-        /// 
-        /*
-         private void axKHOpenAPI_OnReceiveTrData(object sender, AxKHOpenAPILib._DKHOpenAPIEvents_OnReceiveTrDataEvent e)
-         {
-             ///sScrNo – 화면번호
-             ///sRQName – 사용자구분 명
-             ///sTrCode – Tran 명
-             ///sRecordName – Record 명
-             ///sPreNext – 연속조회 유무
-             //////sRQName – CommRqData의 sRQName과 매핑되는 이름이다.
-             ///sTrCode – CommRqData의 sTrCode과 매핑되는 이름이다.
-             ///            
-         }
-         */
-
-        /// <summary>
-        ///실시간 시세 이벤트
-        /// this.axKHOpenAPI.OnReceiveRealData += new AxKHOpenAPILib._DKHOpenAPIEvents_OnReceiveRealDataEventHandler(this.axKHOpenAPI_OnReceiveRealData);
-        ///[E2]실시간데이터를 받은 시점을 알려준다.
-        ///입력값
-        ///sRealType – 종목코드
-        ///sRealType – 리얼타입
-        ///sRealData – 실시간 데이터전문
-        ///반환값 없음
-        /// </summary>
-        private void axKHOpenAPI_OnReceiveRealData(object sender, AxKHOpenAPILib._DKHOpenAPIEvents_OnReceiveRealDataEvent e)
-        {
-            
-            FileLog.PrintF(Log.실시간, "[OnReceiveRealData]종목코드(sRealKey) : {0} | RealType : {1} | RealData : {2}", e.sRealKey, e.sRealType, e.sRealData);
-        }
-
-        /// <summary>
-        ///수신 메시지 이벤트
-        ///this.axKHOpenAPI.OnReceiveMsg += new AxKHOpenAPILib._DKHOpenAPIEvents_OnReceiveMsgEventHandler(this.axKHOpenAPI_OnReceiveMsg);
-        ///[E3]설명 서버통신 후 메시지를 받은 시점을 알려준다.
-        ///입력값
-        ///sScrNo – 화면번호
-        ///sRQName – 사용자구분 명
-        ///sTrCode – Tran 명
-        ///sMsg – 서버메시지
-        ///비고
-        ///sScrNo – CommRqData의 sScrNo와 매핑된다.
-        ///sRQName – CommRqData의 sRQName 와 매핑된다.
-        ///sTrCode – CommRqData의 sTrCode 와 매핑된다.
-        /// </summary>
-        private void axKHOpenAPI_OnReceiveMsg(object sender, AxKHOpenAPILib._DKHOpenAPIEvents_OnReceiveMsgEvent e)
-        {
-            FileLog.PrintF(Log.조회, "[]화면번호:{0} | RQName:{1} | TRCode:{2} | 메세지:{3}", e.sScrNo, e.sRQName, e.sTrCode, e.sMsg);
-        }
-        
-        /// <summary>
-        ///주문 접수/ 확인 수신시 이벤트
-        ///this.axKHOpenAPI.OnReceiveChejanData += new AxKHOpenAPILib._DKHOpenAPIEvents_OnReceiveChejanDataEventHandler(this.axKHOpenAPI_OnReceiveChejanData);
-        ///[E4]        설명 체결데이터를 받은 시점을 알려준다.
-        ///입력값
-        ///sGubun – 체결구분
-        ///nItemCnt - 아이템갯수
-        ///sFIdList – 데이터리스트
-        ///비고 //sGubun – 0:주문체결통보, 1:잔고통보, 3:특이신호      sFidList – 데이터 구분은 ‘;’ 이다.
-        /// </summary>
-        private void axKHOpenAPI_OnReceiveChejanData(object sender, AxKHOpenAPILib._DKHOpenAPIEvents_OnReceiveChejanDataEvent e)
-        {
-            FileLog.PrintF(Log.실시간, "[OnReceiveChejanData]종목코드(sRealKey) : {0} | RealType : {1} | RealData : {2}", e.sGubun, e.nItemCnt, e.sFIdList);
-        }
-
-        /// <summary>
-        ///통신 연결 상태 변경시 이벤트
-        ///this.axKHOpenAPI.OnEventConnect += new AxKHOpenAPILib._DKHOpenAPIEvents_OnEventConnectEventHandler(this.axKHOpenAPI_OnEventConnect);
-        ///[E5]서버 접속 관련 이벤트
-        ///입력값 LONG nErrCode : 에러 코드
-        ///반환값 없음
-        ///비고
-        ///nErrCode가 0이면 로그인 성공, 음수면 실패
-        //음수인 경우는 에러 코드 참조
-        /// </summary>
-        private void axKHOpenAPI_OnEventConnect(object sender, AxKHOpenAPILib._DKHOpenAPIEvents_OnEventConnectEvent e)
-        {
-            FileLog.PrintF(Log.실시간, "nErrCode : {0} ", e.nErrCode);
-            if (Error.IsError(e.nErrCode))
-            {
-                FileLog.PrintF(Log.일반, "[로그인 처리결과] " + Error.GetErrorMessage());
-            }
-            else
-            {
-                FileLog.PrintF(Log.에러, "[로그인 처리결과] " + Error.GetErrorMessage());
-            }
-        }
-
-        
-        /// <summary>
-        ///조건검색 실시간 편입,이탈종목 이벤트
-        ///this.axKHOpenAPI.OnReceiveRealCondition += new AxKHOpenAPILib._DKHOpenAPIEvents_OnReceiveRealConditionEventHandler(this.axKHOpenAPI_OnReceiveRealCondition);
-        ///[E6]설명 조건검색 실시간 편입, 이탈 종목을 받을 시점을 알려준다.
-        ///입력값
-        ///strCode : 종목코드
-        ///sstrType : 편입(“I”), 이탈(“D”)
-        ///strConditionName : 조건명
-        ///strConditionIndex : 조건명 인덱스
-        ///비고
-        ///strConditionName에 해당하는 종목이 실시간으로 들어옴.
-        ///strType으로 편입된 종목인지 이탈된 종목인지 구분한다
-        /// </summary>
-        private void axKHOpenAPI_OnReceiveRealCondition(object sender, AxKHOpenAPILib._DKHOpenAPIEvents_OnReceiveRealConditionEvent e)
-        {
-            FileLog.PrintF(Log.실시간, "[OnReceiveRealCondition]========= 조건조회 실시간 편입/이탈 ==========");
-            FileLog.PrintF(Log.실시간, "[OnReceiveRealCondition][종목코드] : " + e.sTrCode);
-            FileLog.PrintF(Log.실시간, "[OnReceiveRealCondition][실시간타입] : " + e.strType);
-            FileLog.PrintF(Log.실시간, "[OnReceiveRealCondition][조건명] : " + e.strConditionName);
-            FileLog.PrintF(Log.실시간, "[OnReceiveRealCondition][조건명 인덱스] : " + e.strConditionIndex);
-        }
-
-
-        /// <summary>
-        ///[E7]조건검색 조회응답 이벤트
-        ///this.axKHOpenAPI.OnReceiveTrCondition += new AxKHOpenAPILib._DKHOpenAPIEvents_OnReceiveTrConditionEventHandler(this.axKHOpenAPI_OnReceiveTrCondition);
-        ///설명 조건검색 조회응답으로 종목리스트를 구분자(“;”)로 붙어서 받는 시점.
-        ///입력값
-        ///sScrNo : 종목코드
-        ///strCodeList : 종목리스트(“;”로 구분)
-        ///strConditionName : 조건명
-        ///nIndex : 조건명 인덱스
-        ///nNext : 연속조회(2:연속조회, 0:연속조회없음)
-        /// </summary>
-        private void axKHOpenAPI_OnReceiveTrCondition(object sender, AxKHOpenAPILib._DKHOpenAPIEvents_OnReceiveTrConditionEvent e)
-        {
-            FileLog.PrintF(Log.조회, "[OnReceiveTrCondition][화면번호] : " + e.sScrNo);
-            FileLog.PrintF(Log.조회, "[OnReceiveTrCondition][종목리스트] : " + e.strCodeList);
-            FileLog.PrintF(Log.조회, "[OnReceiveTrCondition][조건명] : " + e.strConditionName);
-            FileLog.PrintF(Log.조회, "[OnReceiveTrCondition][조건명 인덱스 ] : " + e.nIndex.ToString());
-            FileLog.PrintF(Log.조회, "[OnReceiveTrCondition][연속조회] : " + e.nNext.ToString());
-        }
-
-
-        /// <summary>
-        //로컬에 사용자조건식 저장 성공여부 응답 이벤트
-        //this.axKHOpenAPI.OnReceiveConditionVer += new AxKHOpenAPILib._DKHOpenAPIEvents_OnReceiveConditionVerEventHandler(this.axKHOpenAPI_OnReceiveConditionVer);
-        ///[E8]설명 로컬에 사용자 조건식 저장 성공 여부를 확인하는 시점
-        ///입력값 long lRet : 사용자 조건식 저장 성공여부(1: 성공, 나머지 실패)
-        /// </summary>
-        private void axKHOpenAPI_OnReceiveConditionVer(object sender, AxKHOpenAPILib._DKHOpenAPIEvents_OnReceiveConditionVerEvent e)
-        {
-            FileLog.PrintF(Log.실시간, "[OnReceiveConditionVer]lRet : {0} ", e.lRet);
-        }
-
-        #endregion
     }
 }

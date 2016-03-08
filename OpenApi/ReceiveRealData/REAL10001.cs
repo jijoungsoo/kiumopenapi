@@ -18,7 +18,6 @@ namespace OpenApi.ReceiveRealData
     ///</summary>
     public class REAL10001 : ReceiveRealData
     {
-        private static readonly String path = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
         public REAL10001(){
             FileLog.PrintF("REAL10001");           
         }
@@ -47,6 +46,7 @@ namespace OpenApi.ReceiveRealData
 	            [568] = 하한가발생시간           //(18)
                 
             */
+            /*
             FileLog.PrintF(String.Format("현재가 : {0} ==>", axKHOpenAPI.GetCommRealData(e.sRealType, 10).Trim()));
             FileLog.PrintF(String.Format("전일대비 : {0} ==>", axKHOpenAPI.GetCommRealData(e.sRealType, 11).Trim()));
             FileLog.PrintF(String.Format("등락율 : {0} ==>", axKHOpenAPI.GetCommRealData(e.sRealType, 12).Trim()));
@@ -69,14 +69,14 @@ namespace OpenApi.ReceiveRealData
             FileLog.PrintF(String.Format("종목코드 : {0} ==>", e.sRealKey.ToString().Trim()));
             FileLog.PrintF(String.Format("RealName : {0} ==>", e.sRealType.ToString().Trim()));
             FileLog.PrintF(String.Format("sRealData : {0} ==>", e.sRealData.ToString().Trim()));
-
+            */
             REAL10001_Data real10001_data = new REAL10001_Data();
             //String 현재시간 = DateTime.Now.ToString("yyyyMMdd HH:mm:ss:fff");
-            real10001_data.현재시간 = DateTime.Now.ToString("yyyyMMdd HH:mm:ss");
+            real10001_data.현재시간 = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
 
             real10001_data.현재가 = Int32.Parse(axKHOpenAPI.GetCommRealData(e.sRealType, 10).Trim());
             real10001_data.전일대비 = Int32.Parse(axKHOpenAPI.GetCommRealData(e.sRealType, 11).Trim());
-            real10001_data.등락율 = Int32.Parse(axKHOpenAPI.GetCommRealData(e.sRealType, 12).Trim());
+            real10001_data.등락율 = float.Parse(axKHOpenAPI.GetCommRealData(e.sRealType, 12).Trim());
             real10001_data.매도호가 = Int32.Parse(axKHOpenAPI.GetCommRealData(e.sRealType, 27).Trim());
             real10001_data.매수호가 = Int32.Parse(axKHOpenAPI.GetCommRealData(e.sRealType, 28).Trim());
             real10001_data.누적거래량 = Int32.Parse(axKHOpenAPI.GetCommRealData(e.sRealType, 13).Trim());
@@ -86,9 +86,9 @@ namespace OpenApi.ReceiveRealData
             real10001_data.저가 = Int32.Parse(axKHOpenAPI.GetCommRealData(e.sRealType, 18).Trim());
             real10001_data.전일대비기호 = Int32.Parse(axKHOpenAPI.GetCommRealData(e.sRealType, 25).Trim());
             real10001_data.전일거래량대비_계약_주 = Int32.Parse(axKHOpenAPI.GetCommRealData(e.sRealType, 26).Trim());
-            real10001_data.거래대금증감 = Int32.Parse(axKHOpenAPI.GetCommRealData(e.sRealType, 29).Trim());
-            real10001_data.전일거래량대비_비율 = Int32.Parse(axKHOpenAPI.GetCommRealData(e.sRealType, 30).Trim());
-            real10001_data.거래회전율 = Int32.Parse(axKHOpenAPI.GetCommRealData(e.sRealType, 31).Trim());
+            real10001_data.거래대금증감 = decimal.Parse(axKHOpenAPI.GetCommRealData(e.sRealType, 29).Trim());
+            real10001_data.전일거래량대비_비율 = float.Parse(axKHOpenAPI.GetCommRealData(e.sRealType, 30).Trim());
+            real10001_data.거래회전율 = float.Parse(axKHOpenAPI.GetCommRealData(e.sRealType, 31).Trim());
             real10001_data.거래비용 = Int32.Parse(axKHOpenAPI.GetCommRealData(e.sRealType, 32).Trim());
             real10001_data.시가총액_억 = Int32.Parse(axKHOpenAPI.GetCommRealData(e.sRealType, 311).Trim());
             real10001_data.상한가발생시간 = Int32.Parse(axKHOpenAPI.GetCommRealData(e.sRealType, 567).Trim());
@@ -96,11 +96,8 @@ namespace OpenApi.ReceiveRealData
             real10001_data.종목코드 = e.sRealKey.ToString().Trim();
             real10001_data.RealName = e.sRealType.ToString().Trim();
             
-            if (1 == 2) {
-                SendDirectFile(real10001_data);
-            } else {
+        //        SendDirectFile(real10001_data);
                 SendDirectDb(real10001_data);
-            }
         }
         private void SendDirectFile(REAL10001_Data real10001_data)
         {
@@ -128,17 +125,16 @@ namespace OpenApi.ReceiveRealData
                   , real10001_data.상한가발생시간   //[19]
                   , real10001_data.하한가발생시간   //[20]
              );
-
-            String path1 = path + "\\주식시세.txt";
-            System.IO.StreamWriter file = new System.IO.StreamWriter(path1, true);
-            file.Write(tmp1.ToString());
+            System.IO.StreamWriter file = new System.IO.StreamWriter(Config.GetPath() + "주식시세.txt", true);
+            file.WriteLine(tmp1.ToString());
             file.Close();
         }
         private void SendDirectDb(REAL10001_Data real10001_data)
         {
-            using (MySqlConnection conn = new MySqlConnection(Class1.connStr))
+            using (MySqlConnection conn = new MySqlConnection(Config.GetDbConnStr()))
             {
-
+                String dayTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                
                 string sql = @"INSERT into  realtime_prices (
 stock_date
 ,stock_code
@@ -161,6 +157,8 @@ stock_date
 ,total_market_price
 ,upper_price_limit_time
 ,lower_price_limit_time
+,created_at
+,updated_at
 )
 VALUES
 (
@@ -185,6 +183,8 @@ VALUES
 ,@시가총액_억
 ,@상한가발생시간
 ,@하한가발생시간
+,current_timestamp
+,current_timestamp
 );
 ";               
                 conn.Open();
@@ -209,10 +209,8 @@ VALUES
                 cmd.Parameters.AddWithValue("@거래비용", real10001_data.거래비용);
                 cmd.Parameters.AddWithValue("@시가총액_억", real10001_data.시가총액_억);
                 cmd.Parameters.AddWithValue("@상한가발생시간", real10001_data.상한가발생시간);
-                cmd.Parameters.AddWithValue("@하한가발생시간", real10001_data.하한가발생시간);
-                cmd.Parameters.AddWithValue("@거래비용", real10001_data.거래비용);
-                cmd.Parameters.AddWithValue("@거래비용", real10001_data.거래비용);
-                cmd.ExecuteNonQuery();  //기존 계좌수익률을 삭제하고
+                cmd.Parameters.AddWithValue("@하한가발생시간", real10001_data.하한가발생시간);             
+                cmd.ExecuteNonQuery();
             }
         }
     }

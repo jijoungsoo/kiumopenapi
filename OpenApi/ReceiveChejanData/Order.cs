@@ -11,7 +11,6 @@ namespace OpenApi.ReceiveChejanData
 {
     class Order : ReceiveChejanData
     {
-        private static readonly String path = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
         public Order()
         {
             FileLog.PrintF("Order");
@@ -171,14 +170,13 @@ namespace OpenApi.ReceiveChejanData
                 order_Data.당일매매세금 //[25]
              );
 
-            String path1 = path + "\\주문접수.txt";
-            System.IO.StreamWriter file = new System.IO.StreamWriter(path1, true);
-            file.Write(tmp1.ToString());
+            System.IO.StreamWriter file = new System.IO.StreamWriter(Config.GetPath() + "주문접수.txt", true);
+            file.WriteLine(tmp1.ToString());
             file.Close();
         }
         private void SendDirectDb(Order_Data order_Data)
         {
-            using (MySqlConnection conn = new MySqlConnection(Class1.connStr))
+            using (MySqlConnection conn = new MySqlConnection(Config.GetDbConnStr()))
             {
                 string sql = @"INSERT into  orders (
 contract_time

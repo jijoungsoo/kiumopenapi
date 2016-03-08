@@ -17,7 +17,6 @@ namespace OpenApi.ReceiveRealData
     ///</summary>
     public class REAL10003 : ReceiveRealData
     {
-        private static readonly String path = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
         public REAL10003(){
             FileLog.PrintF("REAL10003");
         }
@@ -34,7 +33,7 @@ namespace OpenApi.ReceiveRealData
             FileLog.PrintF(String.Format("RealName : {0} ==>", e.sRealType.ToString().Trim()));
             FileLog.PrintF(String.Format("sRealData : {0} ==>", e.sRealData.ToString().Trim()));
                         
-            String 현재시간 = DateTime.Now.ToString("yyyyMMdd HH:mm:ss");
+            String 현재시간 = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
             REAL10003_Data real10003_data = new REAL10003_Data();
             real10003_data.현재시간 = 현재시간;
             real10003_data.최우선_매도호가 = Int32.Parse(axKHOpenAPI.GetCommRealData(e.sRealType, 27).Trim());         //[0]
@@ -42,11 +41,8 @@ namespace OpenApi.ReceiveRealData
             real10003_data.종목코드 = e.sRealKey.ToString().Trim(); //[2]
             real10003_data.RealName = e.sRealType.ToString().Trim(); //[3]
             
-            if (1 == 2) {
-                SendDirectFile(real10003_data);
-            } else {
-                SendDirectDb(real10003_data);
-            }
+            SendDirectFile(real10003_data);
+            SendDirectDb(real10003_data);
         }
 
         private void SendDirectFile(REAL10003_Data real10003_data)
@@ -61,22 +57,21 @@ namespace OpenApi.ReceiveRealData
                      real10003_data.RealName
              );
 
-            String path1 = path + "\\주식우선호가.txt";
-            System.IO.StreamWriter file = new System.IO.StreamWriter(path1, true);
-            file.Write(tmp1.ToString());
+            System.IO.StreamWriter file = new System.IO.StreamWriter(Config.GetPath() + "\\주식우선호가.txt", true);
+            file.WriteLine(tmp1.ToString());
             file.Close();
         }
         private void SendDirectDb(REAL10003_Data real10003_data)
         {
-            using (MySqlConnection conn = new MySqlConnection(Class1.connStr))
+            using (MySqlConnection conn = new MySqlConnection(Config.GetDbConnStr()))
             {
-
                 string sql = @"INSERT into realtime_best_offered_and_bids (
 stock_date
 ,stock_code
 ,offered_price
 ,bid_price
-,bid_price
+,created_at
+,updated_at
 )
 VALUES
 (
@@ -84,6 +79,8 @@ VALUES
 ,@종목코드
 ,@최우선_매도호가
 ,@최우선_매수호가
+,current_timestamp
+,current_timestamp
 );
 ";
                 conn.Open();
@@ -92,7 +89,7 @@ VALUES
                 cmd.Parameters.AddWithValue("@종목코드", real10003_data.종목코드);
                 cmd.Parameters.AddWithValue("@최우선_매도호가", real10003_data.최우선_매도호가);
                 cmd.Parameters.AddWithValue("@최우선_매수호가", real10003_data.최우선_매수호가);
-                cmd.ExecuteNonQuery();  //기존 계좌수익률을 삭제하고
+                cmd.ExecuteNonQuery();
             }
         }
     }
